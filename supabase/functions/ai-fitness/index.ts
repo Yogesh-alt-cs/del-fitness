@@ -174,6 +174,51 @@ serve(async (req) => {
       });
     }
 
+    if (type === "meal_plan") {
+      const { goal, dietaryPreferences, mealsPerDay, calorieTarget } = payload;
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional nutritionist. Create a detailed 7-day meal plan. Return ONLY valid JSON: { planName: string, dailyCalories: number, days: [{ day: string, meals: [{ name: string, type: string (breakfast/lunch/dinner/snack), calories: number, protein_g: number, carbs_g: number, fat_g: number, ingredients: string[], instructions: string }] }] }. No markdown."
+            },
+            {
+              role: "user",
+              content: `Goal: ${goal}. Dietary preferences: ${dietaryPreferences}. Meals per day: ${mealsPerDay}. Target calories: ${calorieTarget} cal/day.`
+            }
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const t = await response.text();
+        console.error("AI gateway error:", response.status, t);
+        if (response.status === 429) return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: "Meal plan generation failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+      let parsed;
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
+      } catch {
+        parsed = { error: "Failed to parse", raw: content };
+      }
+
+      return new Response(JSON.stringify(parsed), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown type" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
