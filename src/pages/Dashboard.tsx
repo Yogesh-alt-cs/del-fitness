@@ -3,13 +3,10 @@ import { Flame, Dumbbell, Apple, TrendingUp, Play, Bot, Calculator, Trophy } fro
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
-
-const stats = [
-  { label: "Calories", value: "1,840", target: "/ 2,200", icon: Flame, color: "text-secondary" },
-  { label: "Protein", value: "124g", target: "/ 160g", icon: Apple, color: "text-primary" },
-  { label: "Workouts", value: "3", target: "this week", icon: Dumbbell, color: "text-primary" },
-  { label: "Streak", value: "12", target: "days", icon: Trophy, color: "text-secondary" },
-];
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 const quickActions = [
   { label: "Log Food", icon: Apple, path: "/nutrition", color: "bg-primary/10 text-primary" },
@@ -19,30 +16,92 @@ const quickActions = [
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const [quote, setQuote] = useState("The only bad workout is the one that didn't happen.");
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: todayFoodLogs } = useQuery({
+    queryKey: ["today_food", user?.id],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data } = await supabase
+        .from("food_logs")
+        .select("*")
+        .eq("user_id", user!.id)
+        .gte("logged_at", today);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const { data: workoutLogs } = useQuery({
+    queryKey: ["week_workouts", user?.id],
+    queryFn: async () => {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from("workout_logs")
+        .select("*")
+        .eq("user_id", user!.id)
+        .gte("completed_at", weekAgo);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    supabase.functions.invoke("ai-fitness", { body: { type: "motivation", payload: {} } })
+      .then(({ data }) => { if (data?.quote) setQuote(data.quote); })
+      .catch(() => {});
+  }, []);
+
+  const todayCalories = todayFoodLogs?.reduce((s, l) => s + (Number(l.calories) || 0), 0) || 0;
+  const todayProtein = todayFoodLogs?.reduce((s, l) => s + (Number(l.protein_g) || 0), 0) || 0;
+  const weekWorkouts = workoutLogs?.length || 0;
+  const displayName = profile?.name || user?.user_metadata?.name || "Athlete";
+
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  const stats = [
+    { label: "Calories", value: todayCalories.toLocaleString(), target: "/ 2,200", icon: Flame, color: "text-secondary" },
+    { label: "Protein", value: `${Math.round(todayProtein)}g`, target: "/ 160g", icon: Apple, color: "text-primary" },
+    { label: "Workouts", value: String(weekWorkouts), target: "this week", icon: Dumbbell, color: "text-primary" },
+    { label: "Streak", value: "—", target: "days", icon: Trophy, color: "text-secondary" },
+  ];
+
+  // BMI calculation
+  let bmi: number | null = null;
+  if (profile?.weight_kg && profile?.height_cm) {
+    const hm = Number(profile.height_cm) / 100;
+    bmi = Number(profile.weight_kg) / (hm * hm);
+  }
 
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
-        {/* Welcome */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-muted-foreground text-sm">{today}</p>
           <h1 className="text-3xl md:text-4xl font-display mt-1">
-            WELCOME BACK, <span className="text-gradient-primary">ATHLETE</span>
+            WELCOME BACK, <span className="text-gradient-primary">{displayName.toUpperCase()}</span>
           </h1>
         </motion.div>
 
-        {/* Motivational quote */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-card border border-border rounded-xl p-4 italic text-muted-foreground text-sm"
         >
-          "The only bad workout is the one that didn't happen." — Unknown
+          {quote}
         </motion.div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((s, i) => (
             <motion.div
@@ -62,17 +121,11 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Quick Actions */}
         <div>
           <h2 className="font-display text-xl mb-4 text-foreground">QUICK ACTIONS</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map((a, i) => (
-              <motion.div
-                key={a.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.05 }}
-              >
+              <motion.div key={a.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
                 <Link to={a.path}>
                   <div className="bg-card border border-border rounded-xl p-5 flex flex-col items-center gap-3 hover:border-primary/30 transition-all cursor-pointer group">
                     <div className={`h-12 w-12 rounded-lg ${a.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
@@ -86,7 +139,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* BMI Widget */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -97,12 +149,19 @@ export default function Dashboard() {
             <Calculator className="h-5 w-5 text-primary" />
             <h2 className="font-display text-xl text-foreground">BMI CALCULATOR</h2>
           </div>
-          <p className="text-muted-foreground text-sm">
-            Set up your profile with height and weight to see your BMI and personalized recommendations.
-          </p>
-          <Link to="/profile">
-            <Button variant="hero" size="sm" className="mt-4">Set Up Profile</Button>
-          </Link>
+          {bmi ? (
+            <div>
+              <div className="font-display text-4xl text-foreground">{bmi.toFixed(1)}</div>
+              <p className="text-muted-foreground text-sm mt-1">
+                {bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal weight" : bmi < 30 ? "Overweight" : "Obese"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-muted-foreground text-sm">Set up your profile with height and weight to see your BMI.</p>
+              <Link to="/profile"><Button variant="hero" size="sm" className="mt-4">Set Up Profile</Button></Link>
+            </>
+          )}
         </motion.div>
       </div>
     </AppLayout>

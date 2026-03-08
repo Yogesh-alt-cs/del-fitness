@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
-import { Play, Heart, Search } from "lucide-react";
+import { Play, Heart } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 const categories = [
   { name: "All", key: "all" },
@@ -29,7 +33,36 @@ const videos = [
 
 export default function VideosPage() {
   const [active, setActive] = useState("all");
+  const { user } = useAuth();
+  const { toast } = useToast();
   const filtered = active === "all" ? videos : videos.filter((v) => v.category === active);
+
+  const { data: favorites, refetch } = useQuery({
+    queryKey: ["favorites", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("favorite_videos").select("video_id").eq("user_id", user!.id);
+      return data?.map((f) => f.video_id) || [];
+    },
+    enabled: !!user,
+  });
+
+  const toggleFavorite = async (video: typeof videos[0]) => {
+    if (!user) return;
+    const isFav = favorites?.includes(video.id);
+    if (isFav) {
+      await supabase.from("favorite_videos").delete().eq("user_id", user.id).eq("video_id", video.id);
+      toast({ title: "Removed from favorites" });
+    } else {
+      await supabase.from("favorite_videos").insert({
+        user_id: user.id,
+        video_id: video.id,
+        video_title: video.title,
+        category: video.category,
+      });
+      toast({ title: "Added to favorites!" });
+    }
+    refetch();
+  };
 
   return (
     <AppLayout>
@@ -41,7 +74,6 @@ export default function VideosPage() {
           <p className="text-muted-foreground mt-2">Curated workout videos from top fitness creators.</p>
         </motion.div>
 
-        {/* Category pills */}
         <div className="flex gap-2 flex-wrap">
           {categories.map((c) => (
             <button
@@ -58,37 +90,42 @@ export default function VideosPage() {
           ))}
         </div>
 
-        {/* Video grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((v, i) => (
-            <motion.div
-              key={v.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-all group"
-            >
-              <div className="aspect-video relative">
-                <iframe
-                  src={`https://www.youtube.com/embed/${v.id}`}
-                  title={v.title}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  loading="lazy"
-                />
-              </div>
-              <div className="p-4 flex items-start justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-foreground">{v.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{v.channel}</p>
+          {filtered.map((v, i) => {
+            const isFav = favorites?.includes(v.id);
+            return (
+              <motion.div
+                key={v.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-all group"
+              >
+                <div className="aspect-video relative">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${v.id}`}
+                    title={v.title}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                  />
                 </div>
-                <button className="text-muted-foreground hover:text-secondary transition-colors">
-                  <Heart className="h-4 w-4" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                <div className="p-4 flex items-start justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">{v.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{v.channel}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleFavorite(v)}
+                    className={`transition-colors ${isFav ? "text-secondary" : "text-muted-foreground hover:text-secondary"}`}
+                  >
+                    <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </AppLayout>
