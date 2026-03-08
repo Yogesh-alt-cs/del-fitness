@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
-import { Dumbbell, Sparkles, Loader2, X, ChevronDown } from "lucide-react";
+import { Dumbbell, Sparkles, Loader2, X, ChevronDown, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import WorkoutLogger from "@/components/WorkoutLogger";
 
 type WorkoutPlan = {
   planName: string;
@@ -38,6 +40,23 @@ export default function WorkoutsPage() {
   const [showGenerator, setShowGenerator] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlan | null>(null);
+  const [showLogger, setShowLogger] = useState(false);
+  const [loggerExercises, setLoggerExercises] = useState<string[] | undefined>();
+  const [loggerName, setLoggerName] = useState<string | undefined>();
+
+  const { data: recentWorkouts, refetch: refetchWorkouts } = useQuery({
+    queryKey: ["recent_workouts", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("workout_logs")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("completed_at", { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+    enabled: !!user,
+  });
 
   // Generator form
   const [fitnessLevel, setFitnessLevel] = useState("intermediate");
@@ -67,19 +86,18 @@ export default function WorkoutsPage() {
     }
   };
 
-  const saveWorkout = async () => {
-    if (!generatedPlan || !user) return;
-    try {
-      await supabase.from("workout_logs").insert({
-        user_id: user.id,
-        workout_name: generatedPlan.planName,
-        exercises_json: generatedPlan.days as any,
-        duration_mins: parseInt(timeMinutes),
-      });
-      toast({ title: "Workout saved!" });
-    } catch {
-      toast({ title: "Failed to save", variant: "destructive" });
-    }
+  const startFromPlan = (plan: WorkoutPlan, dayIdx: number) => {
+    const day = plan.days[dayIdx];
+    if (!day) return;
+    setLoggerExercises(day.exercises.map((e) => e.name));
+    setLoggerName(`${plan.planName} - ${day.dayName}`);
+    setShowLogger(true);
+  };
+
+  const startBlankWorkout = () => {
+    setLoggerExercises(undefined);
+    setLoggerName(undefined);
+    setShowLogger(true);
   };
 
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
@@ -93,6 +111,24 @@ export default function WorkoutsPage() {
           </h1>
           <p className="text-muted-foreground mt-2">Choose a plan or let AI create one for you.</p>
         </motion.div>
+
+        {/* Active Workout Logger */}
+        {showLogger && (
+          <WorkoutLogger
+            onClose={() => { setShowLogger(false); refetchWorkouts(); }}
+            initialExercises={loggerExercises}
+            workoutName={loggerName}
+          />
+        )}
+
+        {/* Start workout button */}
+        {!showLogger && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+            <Button variant="hero" className="w-full h-14 text-lg" onClick={startBlankWorkout}>
+              <Play className="h-5 w-5 mr-2" /> Start Empty Workout
+            </Button>
+          </motion.div>
+        )}
 
         {/* AI Generator */}
         <motion.div
@@ -180,19 +216,16 @@ export default function WorkoutsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-card border border-primary/20 rounded-xl p-6 space-y-4"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
                 <h2 className="font-display text-2xl text-foreground">{generatedPlan.planName}</h2>
                 <p className="text-muted-foreground text-sm">
                   {generatedPlan.duration_weeks} weeks • {generatedPlan.sessionsPerWeek} sessions/week
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button variant="hero" size="sm" onClick={saveWorkout}>Save Plan</Button>
-                <Button variant="outline" size="sm" onClick={() => setGeneratedPlan(null)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => setGeneratedPlan(null)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="space-y-2">
@@ -225,6 +258,14 @@ export default function WorkoutsPage() {
                           {ex.tips && <p className="text-xs text-primary/70 mt-1">💡 {ex.tips}</p>}
                         </div>
                       ))}
+                      <Button
+                        variant="hero"
+                        size="sm"
+                        className="w-full mt-2"
+                        onClick={() => startFromPlan(generatedPlan, i)}
+                      >
+                        <Play className="h-4 w-4 mr-2" /> Start This Day's Workout
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -253,21 +294,35 @@ export default function WorkoutsPage() {
           ))}
         </div>
 
-        {/* Workout logger */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-card border border-border rounded-xl p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <Dumbbell className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-xl text-foreground">WORKOUT LOGGER</h2>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            Generate a workout above to log it, or track your sets and reps manually.
-          </p>
-        </motion.div>
+        {/* Recent workouts */}
+        {recentWorkouts && recentWorkouts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-card border border-border rounded-xl p-6"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Dumbbell className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-xl text-foreground">RECENT WORKOUTS</h2>
+            </div>
+            <div className="space-y-3">
+              {recentWorkouts.map((w) => (
+                <div key={w.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <div>
+                    <span className="text-sm text-foreground">{w.workout_name}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {new Date(w.completed_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {w.duration_mins && (
+                    <span className="text-sm text-primary font-medium">{w.duration_mins} min</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </AppLayout>
   );
