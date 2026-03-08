@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import NutritionPage from "./pages/NutritionPage";
 import WorkoutsPage from "./pages/WorkoutsPage";
 import VideosPage from "./pages/VideosPage";
+import ProgressPage from "./pages/ProgressPage";
 import CoachPage from "./pages/CoachPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
