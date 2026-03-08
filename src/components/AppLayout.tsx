@@ -56,9 +56,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Dumbbell className="h-6 w-6 text-primary" />
           <span className="font-display text-xl text-foreground">DELFITNESS</span>
         </Link>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu overlay */}
