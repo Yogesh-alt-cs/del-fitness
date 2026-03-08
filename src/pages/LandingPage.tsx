@@ -126,7 +126,7 @@ export default function LandingPage() {
             <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
               Join DelFitness today and let AI supercharge your fitness journey.
             </p>
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="hero" size="lg" className="h-14 px-10 text-lg">
                 Get Started Free <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
