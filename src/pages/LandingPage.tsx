@@ -22,10 +22,10 @@ export default function LandingPage() {
             <span className="font-display text-2xl text-foreground">DELFITNESS</span>
           </div>
           <div className="flex gap-3">
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="heroOutline" size="sm">Log In</Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="hero" size="sm">Get Started <ArrowRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           </div>
@@ -59,12 +59,12 @@ export default function LandingPage() {
               Your all-in-one AI fitness companion. Analyze meals, generate workouts, and get coached — all in one app.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/dashboard">
+              <Link to="/auth">
                 <Button variant="hero" size="lg" className="h-14 px-8 text-lg">
                   Start Training <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
-              <Link to="/coach">
+              <Link to="/auth">
                 <Button variant="heroOutline" size="lg" className="h-14 px-8 text-lg">
                   Meet Your AI Coach
                 </Button>
@@ -126,7 +126,7 @@ export default function LandingPage() {
             <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
               Join DelFitness today and let AI supercharge your fitness journey.
             </p>
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="hero" size="lg" className="h-14 px-10 text-lg">
                 Get Started Free <ArrowRight className="h-5 w-5 ml-2" />
               </Button>

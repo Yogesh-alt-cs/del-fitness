@@ -1,0 +1,4 @@
+project_id = "ikgqbkcxevkfrnokqdyi"
+
+[functions.ai-fitness]
+verify_jwt = false
