@@ -64,7 +64,7 @@ export default function LandingPage() {
                   Start Training <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
-              <Link to="/coach">
+              <Link to="/auth">
                 <Button variant="heroOutline" size="lg" className="h-14 px-8 text-lg">
                   Meet Your AI Coach
                 </Button>
