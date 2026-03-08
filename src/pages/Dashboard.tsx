@@ -28,6 +28,8 @@ const WEEKLY_GOALS = {
   protein: 160,
 };
 
+const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [quote, setQuote] = useState("The only bad workout is the one that didn't happen.");
@@ -40,6 +42,12 @@ export default function Dashboard() {
     },
     enabled: !!user,
   });
+
+  const userGoals = {
+    workouts: (profile as any)?.goal_workouts_per_week || DEFAULT_GOALS.workouts,
+    calories: (profile as any)?.goal_calories || DEFAULT_GOALS.calories,
+    protein: (profile as any)?.goal_protein || DEFAULT_GOALS.protein,
+  };
 
   const { data: todayFoodLogs } = useQuery({
     queryKey: ["today_food", user?.id],

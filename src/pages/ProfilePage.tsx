@@ -129,6 +129,29 @@ export default function ProfilePage() {
                 </select>
               </div>
             </div>
+
+            {/* Weekly Goals Section */}
+            <div className="pt-4 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Weekly Goals</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Calorie Target</label>
+                  <input type="number" value={goalCalories} onChange={(e) => setGoalCalories(e.target.value)} placeholder="2200" min="500" max="10000" className={inputClass} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Protein Target (g)</label>
+                  <input type="number" value={goalProtein} onChange={(e) => setGoalProtein(e.target.value)} placeholder="160" min="10" max="500" className={inputClass} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Workouts/Week</label>
+                  <input type="number" value={goalWorkouts} onChange={(e) => setGoalWorkouts(e.target.value)} placeholder="4" min="1" max="14" className={inputClass} />
+                </div>
+              </div>
+            </div>
+
             <Button variant="hero" type="submit" disabled={updateProfile.isPending} className="w-full">
               <Save className="h-4 w-4 mr-2" />
               {updateProfile.isPending ? "Saving..." : "Save Profile"}
