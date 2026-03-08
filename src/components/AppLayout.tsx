@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Dumbbell, Apple, Play, Bot, LayoutDashboard, User, Menu, X, TrendingUp } from "lucide-react";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -44,6 +45,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        <div className="pt-4 border-t border-border">
+          <ThemeToggle />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
@@ -52,9 +56,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Dumbbell className="h-6 w-6 text-primary" />
           <span className="font-display text-xl text-foreground">DELFITNESS</span>
         </Link>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="text-foreground">
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu overlay */}
