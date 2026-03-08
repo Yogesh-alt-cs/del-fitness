@@ -163,6 +163,9 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           goal: string | null
+          goal_calories: number | null
+          goal_protein: number | null
+          goal_workouts_per_week: number | null
           height_cm: number | null
           id: string
           name: string | null
@@ -175,6 +178,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           goal?: string | null
+          goal_calories?: number | null
+          goal_protein?: number | null
+          goal_workouts_per_week?: number | null
           height_cm?: number | null
           id?: string
           name?: string | null
@@ -187,6 +193,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           goal?: string | null
+          goal_calories?: number | null
+          goal_protein?: number | null
+          goal_workouts_per_week?: number | null
           height_cm?: number | null
           id?: string
           name?: string | null

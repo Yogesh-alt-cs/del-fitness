@@ -29,6 +29,9 @@ export default function ProfilePage() {
   const [weightKg, setWeightKg] = useState("");
   const [heightCm, setHeightCm] = useState("");
   const [goal, setGoal] = useState("");
+  const [goalCalories, setGoalCalories] = useState("2200");
+  const [goalProtein, setGoalProtein] = useState("160");
+  const [goalWorkouts, setGoalWorkouts] = useState("4");
 
   useEffect(() => {
     if (profile) {
@@ -37,6 +40,9 @@ export default function ProfilePage() {
       setWeightKg(profile.weight_kg?.toString() || "");
       setHeightCm(profile.height_cm?.toString() || "");
       setGoal(profile.goal || "");
+      setGoalCalories((profile as any).goal_calories?.toString() || "2200");
+      setGoalProtein((profile as any).goal_protein?.toString() || "160");
+      setGoalWorkouts((profile as any).goal_workouts_per_week?.toString() || "4");
     }
   }, [profile]);
 
@@ -48,7 +54,10 @@ export default function ProfilePage() {
         weight_kg: weightKg ? parseFloat(weightKg) : null,
         height_cm: heightCm ? parseFloat(heightCm) : null,
         goal: goal || null,
-      }).eq("user_id", user!.id);
+        goal_calories: goalCalories ? parseInt(goalCalories) : 2200,
+        goal_protein: goalProtein ? parseInt(goalProtein) : 160,
+        goal_workouts_per_week: goalWorkouts ? parseInt(goalWorkouts) : 4,
+      } as any).eq("user_id", user!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -120,6 +129,29 @@ export default function ProfilePage() {
                 </select>
               </div>
             </div>
+
+            {/* Weekly Goals Section */}
+            <div className="pt-4 border-t border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Weekly Goals</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Calorie Target</label>
+                  <input type="number" value={goalCalories} onChange={(e) => setGoalCalories(e.target.value)} placeholder="2200" min="500" max="10000" className={inputClass} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Protein Target (g)</label>
+                  <input type="number" value={goalProtein} onChange={(e) => setGoalProtein(e.target.value)} placeholder="160" min="10" max="500" className={inputClass} />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Workouts/Week</label>
+                  <input type="number" value={goalWorkouts} onChange={(e) => setGoalWorkouts(e.target.value)} placeholder="4" min="1" max="14" className={inputClass} />
+                </div>
+              </div>
+            </div>
+
             <Button variant="hero" type="submit" disabled={updateProfile.isPending} className="w-full">
               <Save className="h-4 w-4 mr-2" />
               {updateProfile.isPending ? "Saving..." : "Save Profile"}

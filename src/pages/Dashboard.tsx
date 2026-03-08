@@ -22,11 +22,7 @@ const MACRO_COLORS = {
   fats: "hsl(24, 95%, 53%)",
 };
 
-const WEEKLY_GOALS = {
-  workouts: 4,
-  calories: 2200,
-  protein: 160,
-};
+const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -40,6 +36,12 @@ export default function Dashboard() {
     },
     enabled: !!user,
   });
+
+  const userGoals = {
+    workouts: (profile as any)?.goal_workouts_per_week || DEFAULT_GOALS.workouts,
+    calories: (profile as any)?.goal_calories || DEFAULT_GOALS.calories,
+    protein: (profile as any)?.goal_protein || DEFAULT_GOALS.protein,
+  };
 
   const { data: todayFoodLogs } = useQuery({
     queryKey: ["today_food", user?.id],
@@ -164,29 +166,29 @@ export default function Dashboard() {
     {
       label: "Workouts",
       current: weekWorkouts,
-      target: WEEKLY_GOALS.workouts,
+      target: userGoals.workouts,
       unit: "sessions",
       color: "bg-primary",
     },
     {
       label: "Avg Calories",
       current: weekAvgCalories,
-      target: WEEKLY_GOALS.calories,
+      target: userGoals.calories,
       unit: "kcal/day",
       color: "bg-secondary",
     },
     {
       label: "Avg Protein",
       current: weekAvgProtein,
-      target: WEEKLY_GOALS.protein,
+      target: userGoals.protein,
       unit: "g/day",
       color: "bg-primary",
     },
   ];
 
   const stats = [
-    { label: "Calories", value: todayCalories.toLocaleString(), target: "/ 2,200", icon: Flame, color: "text-secondary" },
-    { label: "Protein", value: `${Math.round(todayProtein)}g`, target: "/ 160g", icon: Apple, color: "text-primary" },
+    { label: "Calories", value: todayCalories.toLocaleString(), target: `/ ${userGoals.calories.toLocaleString()}`, icon: Flame, color: "text-secondary" },
+    { label: "Protein", value: `${Math.round(todayProtein)}g`, target: `/ ${userGoals.protein}g`, icon: Apple, color: "text-primary" },
     { label: "Workouts", value: String(weekWorkouts), target: "this week", icon: Dumbbell, color: "text-primary" },
     { label: "Streak", value: streak > 0 ? String(streak) : "—", target: streak > 0 ? "days" : "start today", icon: Trophy, color: "text-secondary" },
   ];
