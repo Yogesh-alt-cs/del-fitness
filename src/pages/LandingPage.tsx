@@ -22,10 +22,10 @@ export default function LandingPage() {
             <span className="font-display text-2xl text-foreground">DELFITNESS</span>
           </div>
           <div className="flex gap-3">
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="heroOutline" size="sm">Log In</Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="hero" size="sm">Get Started <ArrowRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           </div>
