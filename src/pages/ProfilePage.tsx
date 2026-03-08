@@ -29,6 +29,9 @@ export default function ProfilePage() {
   const [weightKg, setWeightKg] = useState("");
   const [heightCm, setHeightCm] = useState("");
   const [goal, setGoal] = useState("");
+  const [goalCalories, setGoalCalories] = useState("2200");
+  const [goalProtein, setGoalProtein] = useState("160");
+  const [goalWorkouts, setGoalWorkouts] = useState("4");
 
   useEffect(() => {
     if (profile) {
@@ -37,6 +40,9 @@ export default function ProfilePage() {
       setWeightKg(profile.weight_kg?.toString() || "");
       setHeightCm(profile.height_cm?.toString() || "");
       setGoal(profile.goal || "");
+      setGoalCalories((profile as any).goal_calories?.toString() || "2200");
+      setGoalProtein((profile as any).goal_protein?.toString() || "160");
+      setGoalWorkouts((profile as any).goal_workouts_per_week?.toString() || "4");
     }
   }, [profile]);
 
