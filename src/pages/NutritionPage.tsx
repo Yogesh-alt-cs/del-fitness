@@ -287,6 +287,9 @@ export default function NutritionPage() {
             </div>
           </div>
         )}
+
+        {/* Meal Plan Generator */}
+        <MealPlanGenerator />
       </div>
     </AppLayout>
   );
