@@ -168,7 +168,7 @@ export default function Dashboard() {
     {
       label: "Workouts",
       current: weekWorkouts,
-      target: WEEKLY_GOALS.workouts,
+      target: userGoals.workouts,
       unit: "sessions",
       color: "bg-primary",
     },
