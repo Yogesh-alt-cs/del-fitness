@@ -182,7 +182,7 @@ export default function Dashboard() {
     {
       label: "Avg Protein",
       current: weekAvgProtein,
-      target: WEEKLY_GOALS.protein,
+      target: userGoals.protein,
       unit: "g/day",
       color: "bg-primary",
     },
