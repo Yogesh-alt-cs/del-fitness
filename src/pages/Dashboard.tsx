@@ -24,8 +24,6 @@ const MACRO_COLORS = {
 
 const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
 
-const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
-
 export default function Dashboard() {
   const { user } = useAuth();
   const [quote, setQuote] = useState("The only bad workout is the one that didn't happen.");
