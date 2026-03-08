@@ -189,8 +189,8 @@ export default function Dashboard() {
   ];
 
   const stats = [
-    { label: "Calories", value: todayCalories.toLocaleString(), target: "/ 2,200", icon: Flame, color: "text-secondary" },
-    { label: "Protein", value: `${Math.round(todayProtein)}g`, target: "/ 160g", icon: Apple, color: "text-primary" },
+    { label: "Calories", value: todayCalories.toLocaleString(), target: `/ ${userGoals.calories.toLocaleString()}`, icon: Flame, color: "text-secondary" },
+    { label: "Protein", value: `${Math.round(todayProtein)}g`, target: `/ ${userGoals.protein}g`, icon: Apple, color: "text-primary" },
     { label: "Workouts", value: String(weekWorkouts), target: "this week", icon: Dumbbell, color: "text-primary" },
     { label: "Streak", value: streak > 0 ? String(streak) : "—", target: streak > 0 ? "days" : "start today", icon: Trophy, color: "text-secondary" },
   ];
