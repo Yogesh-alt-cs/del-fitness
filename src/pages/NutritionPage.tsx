@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Apple, Upload, BarChart3, Loader2, X, Check } from "lucide-react";
+import MealPlanGenerator from "@/components/MealPlanGenerator";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { useState, useCallback } from "react";
@@ -286,6 +287,9 @@ export default function NutritionPage() {
             </div>
           </div>
         )}
+
+        {/* Meal Plan Generator */}
+        <MealPlanGenerator />
       </div>
     </AppLayout>
   );
