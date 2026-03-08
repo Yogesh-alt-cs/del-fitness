@@ -175,7 +175,7 @@ export default function Dashboard() {
     {
       label: "Avg Calories",
       current: weekAvgCalories,
-      target: WEEKLY_GOALS.calories,
+      target: userGoals.calories,
       unit: "kcal/day",
       color: "bg-secondary",
     },
