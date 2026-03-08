@@ -45,6 +45,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        <div className="pt-4 border-t border-border">
+          <ThemeToggle />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
