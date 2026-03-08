@@ -22,11 +22,7 @@ const MACRO_COLORS = {
   fats: "hsl(24, 95%, 53%)",
 };
 
-const WEEKLY_GOALS = {
-  workouts: 4,
-  calories: 2200,
-  protein: 160,
-};
+const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
 
 const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
 
