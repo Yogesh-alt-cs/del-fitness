@@ -54,7 +54,10 @@ export default function ProfilePage() {
         weight_kg: weightKg ? parseFloat(weightKg) : null,
         height_cm: heightCm ? parseFloat(heightCm) : null,
         goal: goal || null,
-      }).eq("user_id", user!.id);
+        goal_calories: goalCalories ? parseInt(goalCalories) : 2200,
+        goal_protein: goalProtein ? parseInt(goalProtein) : 160,
+        goal_workouts_per_week: goalWorkouts ? parseInt(goalWorkouts) : 4,
+      } as any).eq("user_id", user!.id);
       if (error) throw error;
     },
     onSuccess: () => {
