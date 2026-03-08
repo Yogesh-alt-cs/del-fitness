@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Dumbbell, Apple, Play, Bot, LayoutDashboard, User, Menu, X } from "lucide-react";
+import { Dumbbell, Apple, Play, Bot, LayoutDashboard, User, Menu, X, TrendingUp } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { path: "/nutrition", label: "Nutrition", icon: Apple },
   { path: "/workouts", label: "Workouts", icon: Dumbbell },
   { path: "/videos", label: "Videos", icon: Play },
+  { path: "/progress", label: "Progress", icon: TrendingUp },
   { path: "/coach", label: "Coach", icon: Bot },
   { path: "/profile", label: "Profile", icon: User },
 ];

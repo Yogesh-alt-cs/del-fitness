@@ -32,6 +32,7 @@ const App = () => (
             <Route path="/nutrition" element={<ProtectedRoute><NutritionPage /></ProtectedRoute>} />
             <Route path="/workouts" element={<ProtectedRoute><WorkoutsPage /></ProtectedRoute>} />
             <Route path="/videos" element={<ProtectedRoute><VideosPage /></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
             <Route path="/coach" element={<ProtectedRoute><CoachPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
