@@ -117,6 +117,21 @@ export default function LandingPage() {
             <img src={logo} alt="DelFitness logo" className="h-9 w-9 object-contain" />
             <span className="font-display text-2xl text-foreground">DELFITNESS</span>
           </div>
+          <div className="hidden md:flex items-center gap-6">
+            {[
+              { label: "Features", id: "features" },
+              { label: "Pricing", id: "pricing" },
+              { label: "FAQ", id: "faq" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" })}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           <div className="flex gap-3">
             <Link to="/auth">
               <Button variant="heroOutline" size="sm">Log In</Button>
