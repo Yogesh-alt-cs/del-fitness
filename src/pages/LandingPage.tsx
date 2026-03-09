@@ -150,6 +150,79 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-display mb-4">
+              REAL PEOPLE. <span className="text-gradient-primary">REAL RESULTS.</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              See what our community is saying about DelFitness.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { name: "Marcus J.", role: "Lost 30lbs in 4 months", rating: 5, text: "The AI meal analyzer changed everything for me. I just snap a photo and know exactly what I'm eating. No more guesswork." },
+              { name: "Sarah K.", role: "Marathon runner", rating: 5, text: "Del the AI coach keeps me accountable and adjusts my training when I'm fatigued. It's like having a personal trainer 24/7." },
+              { name: "Alex T.", role: "Gained 15lbs muscle", rating: 5, text: "Smart workout plans that actually adapt to my schedule and equipment. The progress tracking keeps me motivated every single day." },
+            ].map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12, duration: 0.5 }}
+                className="bg-card border border-border rounded-xl p-6 relative group hover:border-primary/20 transition-all"
+              >
+                <Quote className="absolute top-4 right-4 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: t.rating }).map((_, s) => (
+                    <Star key={s} className="h-4 w-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-foreground text-sm leading-relaxed mb-6">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="font-display text-sm text-primary">{t.name.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Stats bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6"
+          >
+            {[
+              { value: "10K+", label: "Active Users" },
+              { value: "500K+", label: "Workouts Logged" },
+              { value: "1M+", label: "Meals Analyzed" },
+              { value: "4.9★", label: "Average Rating" },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="font-display text-3xl md:text-4xl text-gradient-primary">{s.value}</p>
+                <p className="text-muted-foreground text-sm mt-1">{s.label}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24">
         <div className="container mx-auto px-4 text-center">
