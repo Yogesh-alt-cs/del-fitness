@@ -378,6 +378,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <FAQSection />
+
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-4 flex items-center justify-between text-sm text-muted-foreground">
