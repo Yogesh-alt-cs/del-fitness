@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Apple, Play, Bot, ArrowRight, Zap, Brain, Camera, Dumbbell, Star, Quote } from "lucide-react";
+import { Apple, Play, Bot, ArrowRight, Zap, Brain, Camera, Dumbbell, Star, Quote, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-fitness.jpg";
 import logo from "@/assets/delfitness-logo.png";
