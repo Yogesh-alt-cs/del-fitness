@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Dumbbell, Apple, Play, Bot, LayoutDashboard, User, Menu, X, TrendingUp } from "lucide-react";
+import { Apple, Play, Bot, LayoutDashboard, User, Menu, X, TrendingUp, Dumbbell } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import logo from "@/assets/delfitness-logo.png";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -23,7 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card p-6 gap-2 fixed h-screen">
         <Link to="/" className="flex items-center gap-2 mb-8">
-          <Dumbbell className="h-8 w-8 text-primary" />
+          <img src={logo} alt="DelFitness logo" className="h-8 w-8 object-contain" />
           <span className="font-display text-2xl text-foreground">DELFITNESS</span>
         </Link>
         <nav className="flex flex-col gap-1 flex-1">
@@ -53,7 +54,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <Dumbbell className="h-6 w-6 text-primary" />
+          <img src={logo} alt="DelFitness logo" className="h-6 w-6 object-contain" />
           <span className="font-display text-xl text-foreground">DELFITNESS</span>
         </Link>
         <div className="flex items-center gap-2">

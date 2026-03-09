@@ -77,7 +77,7 @@ export default function AuthPage() {
       >
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <Dumbbell className="h-8 w-8 text-primary" />
+            <img src={logo} alt="DelFitness logo" className="h-9 w-9 object-contain" />
             <span className="font-display text-3xl text-foreground">DELFITNESS</span>
           </Link>
           <h1 className="font-display text-2xl text-foreground">

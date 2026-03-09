@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Dumbbell, Apple, Play, Bot, ArrowRight, Zap, Brain, Camera } from "lucide-react";
+import { Apple, Play, Bot, ArrowRight, Zap, Brain, Camera, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-fitness.jpg";
+import logo from "@/assets/delfitness-logo.png";
 
 const features = [
   { icon: Camera, title: "AI Food Analyzer", desc: "Snap a photo of any meal and get instant nutritional breakdown powered by AI." },
@@ -11,14 +12,34 @@ const features = [
   { icon: Brain, title: "AI Coach", desc: "Chat with Del, your personal AI fitness coach, anytime you need guidance." },
 ];
 
+const staggerContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.15, delayChildren: 0.3 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.8 },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto flex items-center justify-between py-4 px-4">
+      <motion.nav
+        initial={{ y: -80 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border"
+      >
+        <div className="container mx-auto flex items-center justify-between py-3 px-4">
           <div className="flex items-center gap-2">
-            <Dumbbell className="h-7 w-7 text-primary" />
+            <img src={logo} alt="DelFitness logo" className="h-9 w-9 object-contain" />
             <span className="font-display text-2xl text-foreground">DELFITNESS</span>
           </div>
           <div className="flex gap-3">
@@ -30,35 +51,42 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage} alt="Athlete in dark gym" className="w-full h-full object-cover opacity-40" />
+          <motion.img
+            src={heroImage}
+            alt="Athlete in dark gym"
+            className="w-full h-full object-cover opacity-40"
+            initial={{ scale: 1.15 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.8, ease: "easeOut" }}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
         </div>
         <div className="container mx-auto relative z-10 px-4 pt-24">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
             className="max-w-2xl"
           >
-            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6">
               <Zap className="h-4 w-4 text-primary" />
               <span className="text-sm text-primary font-medium">AI-Powered Fitness</span>
-            </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display leading-none mb-6">
+            </motion.div>
+            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-8xl font-display leading-none mb-6">
               TRAIN <span className="text-gradient-primary">SMART.</span><br />
               EAT <span className="text-gradient-primary">RIGHT.</span><br />
               LIVE <span className="text-gradient-primary">STRONG.</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg">
               Your all-in-one AI fitness companion. Analyze meals, generate workouts, and get coached — all in one app.
-            </p>
-            <div className="flex flex-wrap gap-4">
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
               <Link to="/auth">
                 <Button variant="hero" size="lg" className="h-14 px-8 text-lg">
                   Start Training <ArrowRight className="h-5 w-5 ml-2" />
@@ -69,9 +97,19 @@ export default function LandingPage() {
                   Meet Your AI Coach
                 </Button>
               </Link>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
+
+        {/* Floating logo accent */}
+        <motion.div
+          className="hidden lg:block absolute right-16 top-1/2 -translate-y-1/2 opacity-20"
+          initial={{ opacity: 0, x: 80, rotate: -15 }}
+          animate={{ opacity: 0.15, x: 0, rotate: 0 }}
+          transition={{ duration: 1.2, delay: 0.6 }}
+        >
+          <img src={logo} alt="" className="w-72 h-72 object-contain" />
+        </motion.div>
       </section>
 
       {/* Features */}
@@ -94,10 +132,11 @@ export default function LandingPage() {
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.12, duration: 0.5 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
                 className="bg-card border border-border rounded-xl p-6 hover:glow-border hover:border-primary/30 transition-all group"
               >
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-primary transition-all">
@@ -139,7 +178,7 @@ export default function LandingPage() {
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-4 flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Dumbbell className="h-5 w-5 text-primary" />
+            <img src={logo} alt="DelFitness logo" className="h-6 w-6 object-contain" />
             <span className="font-display text-lg text-foreground">DELFITNESS</span>
           </div>
           <span>© 2026 DelFitness. All rights reserved.</span>
