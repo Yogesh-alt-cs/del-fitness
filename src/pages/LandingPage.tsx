@@ -223,6 +223,136 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="py-24 bg-gradient-hero">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-display mb-4">
+              CHOOSE YOUR <span className="text-gradient-primary">PLAN</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Start free, upgrade when you're ready to go all in.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Free */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0 }}
+              className="bg-card border border-border rounded-xl p-8 flex flex-col"
+            >
+              <h3 className="font-display text-2xl text-foreground mb-1">FREE</h3>
+              <p className="text-muted-foreground text-sm mb-6">Get started with the basics</p>
+              <div className="mb-6">
+                <span className="font-display text-5xl text-foreground">$0</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  { included: true, text: "3 AI meal analyses / day" },
+                  { included: true, text: "Basic workout logging" },
+                  { included: true, text: "Video library access" },
+                  { included: true, text: "Progress tracking" },
+                  { included: false, text: "AI Coach (Del)" },
+                  { included: false, text: "Custom meal plans" },
+                ].map((f) => (
+                  <li key={f.text} className="flex items-center gap-2 text-sm">
+                    {f.included ? (
+                      <Check className="h-4 w-4 text-primary shrink-0" />
+                    ) : (
+                      <X className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                    )}
+                    <span className={f.included ? "text-foreground" : "text-muted-foreground/50"}>{f.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/auth">
+                <Button variant="heroOutline" className="w-full h-12">Get Started</Button>
+              </Link>
+            </motion.div>
+
+            {/* Pro */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.12 }}
+              className="bg-card border-2 border-primary/40 rounded-xl p-8 flex flex-col relative glow-primary"
+            >
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground font-display text-xs px-4 py-1 rounded-full">
+                MOST POPULAR
+              </div>
+              <h3 className="font-display text-2xl text-foreground mb-1">PRO</h3>
+              <p className="text-muted-foreground text-sm mb-6">Everything you need to crush it</p>
+              <div className="mb-6">
+                <span className="font-display text-5xl text-gradient-primary">$12</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  "Unlimited AI meal analyses",
+                  "Smart workout generation",
+                  "Full video library",
+                  "Advanced progress analytics",
+                  "AI Coach (Del) — unlimited",
+                  "Custom meal plans",
+                ].map((text) => (
+                  <li key={text} className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-foreground">{text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/auth">
+                <Button variant="hero" className="w-full h-12">Start Pro Trial <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              </Link>
+            </motion.div>
+
+            {/* Elite */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.24 }}
+              className="bg-card border border-border rounded-xl p-8 flex flex-col"
+            >
+              <h3 className="font-display text-2xl text-foreground mb-1">ELITE</h3>
+              <p className="text-muted-foreground text-sm mb-6">For the serious athlete</p>
+              <div className="mb-6">
+                <span className="font-display text-5xl text-foreground">$29</span>
+                <span className="text-muted-foreground text-sm">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  "Everything in Pro",
+                  "Priority AI responses",
+                  "Advanced body composition",
+                  "Periodized training cycles",
+                  "Supplement recommendations",
+                  "Early access to new features",
+                ].map((text) => (
+                  <li key={text} className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-foreground">{text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/auth">
+                <Button variant="heroOutline" className="w-full h-12">Go Elite</Button>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24">
         <div className="container mx-auto px-4 text-center">
