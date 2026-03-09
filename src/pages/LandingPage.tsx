@@ -314,7 +314,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-24 bg-gradient-hero">
+      <section id="pricing" className="py-24 bg-gradient-hero scroll-mt-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
