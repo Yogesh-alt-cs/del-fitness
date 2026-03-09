@@ -28,6 +28,80 @@ const scaleIn = {
   show: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
+const faqs = [
+  { q: "Is DelFitness really free to start?", a: "Yes! Our Free plan gives you 3 AI meal analyses per day, workout logging, video library access, and progress tracking — no credit card required." },
+  { q: "How does the AI meal analyzer work?", a: "Simply snap a photo of your meal and our AI instantly identifies the food items, estimates portions, and provides a full nutritional breakdown including calories, protein, carbs, fat, and more." },
+  { q: "Can I cancel my subscription anytime?", a: "Absolutely. There are no contracts or cancellation fees. You can upgrade, downgrade, or cancel your plan at any time from your profile settings." },
+  { q: "What makes Del (the AI Coach) different?", a: "Del learns from your workout history, nutrition data, and goals to provide personalized advice. It adapts recommendations based on your progress, fatigue levels, and schedule." },
+  { q: "Do I need gym equipment to use DelFitness?", a: "Not at all! Our AI generates workouts based on your available equipment — whether that's a full gym, dumbbells at home, or just bodyweight exercises." },
+  { q: "Is my data private and secure?", a: "Your privacy is our priority. All data is encrypted, stored securely, and never sold to third parties. You can export or delete your data at any time." },
+];
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <button
+      onClick={() => setOpen(!open)}
+      className="w-full text-left bg-card border border-border rounded-xl p-5 hover:border-primary/20 transition-all"
+    >
+      <div className="flex items-center justify-between gap-4">
+        <span className="font-medium text-foreground text-sm md:text-base">{q}</span>
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+        </motion.div>
+      </div>
+      <AnimatePresence>
+        {open && (
+          <motion.p
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="text-muted-foreground text-sm leading-relaxed mt-3 overflow-hidden"
+          >
+            {a}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
+
+function FAQSection() {
+  return (
+    <section className="py-24">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl md:text-5xl font-display mb-4">
+            GOT <span className="text-gradient-primary">QUESTIONS?</span>
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            Everything you need to know about DelFitness.
+          </p>
+        </motion.div>
+        <div className="max-w-2xl mx-auto space-y-3">
+          {faqs.map((faq, i) => (
+            <motion.div
+              key={faq.q}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.06 }}
+            >
+              <FAQItem q={faq.q} a={faq.a} />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
