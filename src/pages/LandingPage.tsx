@@ -103,6 +103,19 @@ function FAQSection() {
 }
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { label: "Features", id: "features" },
+    { label: "Pricing", id: "pricing" },
+    { label: "FAQ", id: "faq" },
+  ];
+
+  const scrollTo = (id: string) => {
+    setMobileMenuOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -118,29 +131,66 @@ export default function LandingPage() {
             <span className="font-display text-2xl text-foreground">DELFITNESS</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            {[
-              { label: "Features", id: "features" },
-              { label: "Pricing", id: "pricing" },
-              { label: "FAQ", id: "faq" },
-            ].map((item) => (
+            {navLinks.map((item) => (
               <button
                 key={item.id}
-                onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => scrollTo(item.id)}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {item.label}
               </button>
             ))}
           </div>
-          <div className="flex gap-3">
-            <Link to="/auth">
-              <Button variant="heroOutline" size="sm">Log In</Button>
-            </Link>
-            <Link to="/auth">
-              <Button variant="hero" size="sm">Get Started <ArrowRight className="h-4 w-4 ml-1" /></Button>
-            </Link>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex gap-3">
+              <Link to="/auth">
+                <Button variant="heroOutline" size="sm">Log In</Button>
+              </Link>
+              <Link to="/auth">
+                <Button variant="hero" size="sm">Get Started <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              </Link>
+            </div>
+            <button
+              className="md:hidden text-foreground"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="md:hidden overflow-hidden bg-background/95 backdrop-blur-md border-t border-border"
+            >
+              <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+                {navLinks.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollTo(item.id)}
+                    className="text-left text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <div className="flex gap-3 pt-2 border-t border-border mt-1">
+                  <Link to="/auth" className="flex-1">
+                    <Button variant="heroOutline" size="sm" className="w-full">Log In</Button>
+                  </Link>
+                  <Link to="/auth" className="flex-1">
+                    <Button variant="hero" size="sm" className="w-full">Get Started</Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* Hero */}
