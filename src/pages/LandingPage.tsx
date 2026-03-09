@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Apple, Play, Bot, ArrowRight, Zap, Brain, Camera, Dumbbell, Star, Quote, Check, X } from "lucide-react";
+import { Apple, Play, Bot, ArrowRight, Zap, Brain, Camera, Dumbbell, Star, Quote, Check, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-fitness.jpg";
 import logo from "@/assets/delfitness-logo.png";
