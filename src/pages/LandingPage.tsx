@@ -69,7 +69,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function FAQSection() {
   return (
-    <section className="py-24">
+    <section id="faq" className="py-24 scroll-mt-20">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -116,6 +116,21 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <img src={logo} alt="DelFitness logo" className="h-9 w-9 object-contain" />
             <span className="font-display text-2xl text-foreground">DELFITNESS</span>
+          </div>
+          <div className="hidden md:flex items-center gap-6">
+            {[
+              { label: "Features", id: "features" },
+              { label: "Pricing", id: "pricing" },
+              { label: "FAQ", id: "faq" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" })}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
           <div className="flex gap-3">
             <Link to="/auth">
@@ -188,7 +203,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="py-24 bg-gradient-hero">
+      <section id="features" className="py-24 bg-gradient-hero scroll-mt-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -299,7 +314,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-24 bg-gradient-hero">
+      <section id="pricing" className="py-24 bg-gradient-hero scroll-mt-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
