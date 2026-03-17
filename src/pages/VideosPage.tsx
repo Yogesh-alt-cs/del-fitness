@@ -347,6 +347,20 @@ export default function VideosPage() {
             </div>
           )
         )}
+
+        {/* Load More */}
+        {!searchLoading && active !== "favorites" && nextPageToken && videos.length > 0 && (
+          <div className="flex justify-center pt-2 pb-4">
+            <Button
+              variant="outline"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="rounded-xl px-8"
+            >
+              {loadingMore ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading...</> : "Load More"}
+            </Button>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
