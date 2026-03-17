@@ -174,6 +174,50 @@ serve(async (req) => {
       });
     }
 
+    if (type === "video_recommend") {
+      const { goal, muscleGroup, fitnessLevel } = payload;
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [
+            {
+              role: "system",
+              content: "You are a fitness video curator. Based on the user's goals, suggest 5 YouTube search queries that would find the best workout videos. Return ONLY valid JSON: { queries: string[], description: string }. Make queries specific and varied."
+            },
+            {
+              role: "user",
+              content: `Goal: ${goal || "general fitness"}. Muscle group: ${muscleGroup || "full body"}. Fitness level: ${fitnessLevel || "intermediate"}.`
+            }
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        return new Response(JSON.stringify({ queries: [`${muscleGroup || "full body"} workout for ${fitnessLevel || "beginners"}`], description: "Recommended workout videos" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+      let parsed;
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
+      } catch {
+        parsed = { queries: [`${muscleGroup || "full body"} workout`], description: "Recommended videos" };
+      }
+
+      return new Response(JSON.stringify(parsed), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (type === "meal_plan") {
       const { goal, dietaryPreferences, mealsPerDay, calorieTarget } = payload;
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
