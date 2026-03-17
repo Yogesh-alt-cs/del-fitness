@@ -64,6 +64,9 @@ export default function VideosPage() {
   const [searchInput, setSearchInput] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [allVideos, setAllVideos] = useState<Video[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>();
+  const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -78,7 +81,7 @@ export default function VideosPage() {
   });
 
   // YouTube search
-  const { data: searchResults, isLoading: searchLoading, refetch: refetchSearch } = useQuery({
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ["youtube-search", search, active],
     queryFn: async () => {
       if (active === "favorites") return null;
@@ -87,11 +90,33 @@ export default function VideosPage() {
         body: { type: "search", payload: { query, maxResults: 15 } },
       });
       if (error) throw error;
-      return data as { videos: Video[]; nextPageToken?: string };
+      const result = data as { videos: Video[]; nextPageToken?: string };
+      setAllVideos(result.videos || []);
+      setNextPageToken(result.nextPageToken);
+      return result;
     },
     enabled: active !== "favorites",
     staleTime: 5 * 60 * 1000,
   });
+
+  const loadMore = async () => {
+    if (!nextPageToken || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const query = search.trim() || (active === "all" ? "workout fitness" : `${active} workout exercise`);
+      const { data, error } = await supabase.functions.invoke("youtube-search", {
+        body: { type: "search", payload: { query, maxResults: 15, pageToken: nextPageToken } },
+      });
+      if (error) throw error;
+      const result = data as { videos: Video[]; nextPageToken?: string };
+      setAllVideos((prev) => [...prev, ...(result.videos || [])]);
+      setNextPageToken(result.nextPageToken);
+    } catch (err: any) {
+      toast({ title: "Error loading more", description: err.message, variant: "destructive" });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Video details for enrichment
   const videoIds = searchResults?.videos?.map((v) => v.id).join(",");
