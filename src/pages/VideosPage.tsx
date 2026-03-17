@@ -64,6 +64,9 @@ export default function VideosPage() {
   const [searchInput, setSearchInput] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [allVideos, setAllVideos] = useState<Video[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>();
+  const [loadingMore, setLoadingMore] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -78,7 +81,7 @@ export default function VideosPage() {
   });
 
   // YouTube search
-  const { data: searchResults, isLoading: searchLoading, refetch: refetchSearch } = useQuery({
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ["youtube-search", search, active],
     queryFn: async () => {
       if (active === "favorites") return null;
@@ -87,25 +90,47 @@ export default function VideosPage() {
         body: { type: "search", payload: { query, maxResults: 15 } },
       });
       if (error) throw error;
-      return data as { videos: Video[]; nextPageToken?: string };
+      const result = data as { videos: Video[]; nextPageToken?: string };
+      setAllVideos(result.videos || []);
+      setNextPageToken(result.nextPageToken);
+      return result;
     },
     enabled: active !== "favorites",
     staleTime: 5 * 60 * 1000,
   });
 
-  // Video details for enrichment
-  const videoIds = searchResults?.videos?.map((v) => v.id).join(",");
-  const { data: videoDetails } = useQuery({
-    queryKey: ["youtube-details", videoIds],
-    queryFn: async () => {
-      if (!videoIds) return null;
+  const loadMore = async () => {
+    if (!nextPageToken || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const query = search.trim() || (active === "all" ? "workout fitness" : `${active} workout exercise`);
       const { data, error } = await supabase.functions.invoke("youtube-search", {
-        body: { type: "details", payload: { videoIds } },
+        body: { type: "search", payload: { query, maxResults: 15, pageToken: nextPageToken } },
+      });
+      if (error) throw error;
+      const result = data as { videos: Video[]; nextPageToken?: string };
+      setAllVideos((prev) => [...prev, ...(result.videos || [])]);
+      setNextPageToken(result.nextPageToken);
+    } catch (err: any) {
+      toast({ title: "Error loading more", description: err.message, variant: "destructive" });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Video details for enrichment
+  const allVideoIds = allVideos.map((v) => v.id).join(",");
+  const { data: videoDetails } = useQuery({
+    queryKey: ["youtube-details", allVideoIds],
+    queryFn: async () => {
+      if (!allVideoIds) return null;
+      const { data, error } = await supabase.functions.invoke("youtube-search", {
+        body: { type: "details", payload: { videoIds: allVideoIds } },
       });
       if (error) throw error;
       return data as { videos: Video[] };
     },
-    enabled: !!videoIds,
+    enabled: !!allVideoIds,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -113,7 +138,7 @@ export default function VideosPage() {
   const detailsMap = new Map(videoDetails?.videos?.map((v) => [v.id, v]) || []);
   const videos: Video[] = active === "favorites"
     ? fallbackVideos.filter((v) => favorites?.includes(v.id))
-    : (searchResults?.videos || fallbackVideos).map((v) => ({
+    : (allVideos.length > 0 ? allVideos : fallbackVideos).map((v) => ({
         ...v,
         ...(detailsMap.get(v.id) || {}),
       }));
@@ -321,6 +346,20 @@ export default function VideosPage() {
               })}
             </div>
           )
+        )}
+
+        {/* Load More */}
+        {!searchLoading && active !== "favorites" && nextPageToken && videos.length > 0 && (
+          <div className="flex justify-center pt-2 pb-4">
+            <Button
+              variant="outline"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="rounded-xl px-8"
+            >
+              {loadingMore ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading...</> : "Load More"}
+            </Button>
+          </div>
         )}
       </div>
     </AppLayout>
