@@ -119,18 +119,18 @@ export default function VideosPage() {
   };
 
   // Video details for enrichment
-  const videoIds = searchResults?.videos?.map((v) => v.id).join(",");
+  const allVideoIds = allVideos.map((v) => v.id).join(",");
   const { data: videoDetails } = useQuery({
-    queryKey: ["youtube-details", videoIds],
+    queryKey: ["youtube-details", allVideoIds],
     queryFn: async () => {
-      if (!videoIds) return null;
+      if (!allVideoIds) return null;
       const { data, error } = await supabase.functions.invoke("youtube-search", {
-        body: { type: "details", payload: { videoIds } },
+        body: { type: "details", payload: { videoIds: allVideoIds } },
       });
       if (error) throw error;
       return data as { videos: Video[] };
     },
-    enabled: !!videoIds,
+    enabled: !!allVideoIds,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -138,7 +138,7 @@ export default function VideosPage() {
   const detailsMap = new Map(videoDetails?.videos?.map((v) => [v.id, v]) || []);
   const videos: Video[] = active === "favorites"
     ? fallbackVideos.filter((v) => favorites?.includes(v.id))
-    : (searchResults?.videos || fallbackVideos).map((v) => ({
+    : (allVideos.length > 0 ? allVideos : fallbackVideos).map((v) => ({
         ...v,
         ...(detailsMap.get(v.id) || {}),
       }));
