@@ -2,3 +2,6 @@ project_id = "ikgqbkcxevkfrnokqdyi"
 
 [functions.ai-fitness]
 verify_jwt = false
+
+[functions.youtube-search]
+verify_jwt = false

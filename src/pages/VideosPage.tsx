@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { Play, Heart, Search, X } from "lucide-react";
+import { Play, Heart, Search, X, Sparkles, Loader2, Eye, ThumbsUp } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
-import { useState, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 const categories = [
   { name: "All", key: "all" },
@@ -14,52 +15,60 @@ const categories = [
   { name: "Legs", key: "legs" },
   { name: "Arms", key: "arms" },
   { name: "Core", key: "core" },
-  { name: "Full Body", key: "fullbody" },
+  { name: "Full Body", key: "full body" },
+  { name: "HIIT", key: "hiit" },
   { name: "Favorites", key: "favorites" },
 ];
 
-const allVideos = [
-  // Chest
-  { id: "2xMfFDjJg9A", title: "Best Chest Exercises", category: "chest", channel: "Jeremy Ethier" },
-  { id: "IEhMYQHAFKg", title: "Chest Workout for Mass", category: "chest", channel: "JEFIT" },
-  { id: "k2KiR0lOvQg", title: "Push Up Variations for Chest", category: "chest", channel: "Calisthenicmovement" },
-  { id: "4Y2ZdHCOXok", title: "Dumbbell Chest Workout", category: "chest", channel: "Buff Dudes" },
-  { id: "gey73xiS8F4", title: "Build a Bigger Chest", category: "chest", channel: "Jeff Nippard" },
-  // Back
-  { id: "eGo4IYlbE5g", title: "Back Workout Science", category: "back", channel: "Jeremy Ethier" },
-  { id: "r8lbMKGMg34", title: "Full Back Workout", category: "back", channel: "Buff Dudes" },
-  { id: "ytGaGIn3SjE", title: "Back Exercises Ranked", category: "back", channel: "Jeff Nippard" },
-  { id: "8LJ3Q3Fsrzs", title: "Best Back Width Exercises", category: "back", channel: "Renaissance Periodization" },
-  // Legs
-  { id: "SW_q7GQCalw", title: "Leg Day Essentials", category: "legs", channel: "Jeff Nippard" },
-  { id: "sMu4JnoNWcU", title: "Squat Tips for Growth", category: "legs", channel: "Squat University" },
-  { id: "hipM1VBgrDE", title: "Build Bigger Quads", category: "legs", channel: "Jeremy Ethier" },
-  { id: "IB_icGRKa8c", title: "Glute Workout Complete", category: "legs", channel: "Bret Contreras" },
-  // Arms
-  { id: "nRjKBi5QMsM", title: "Bigger Arms in 30 Days", category: "arms", channel: "Jeremy Ethier" },
-  { id: "8d5QlbCRAJk", title: "Best Bicep Exercises", category: "arms", channel: "Jeff Nippard" },
-  { id: "ogFSbEkLa_s", title: "Tricep Workout for Mass", category: "arms", channel: "Buff Dudes" },
-  { id: "JyV7mUFSpXs", title: "Arm Building Mistakes", category: "arms", channel: "Renaissance Periodization" },
-  // Core
-  { id: "AnYl6Mv5pag", title: "Core Stability Workout", category: "core", channel: "Jeff Nippard" },
-  { id: "sYlhQK8Scqs", title: "6 Pack Abs Routine", category: "core", channel: "Jeremy Ethier" },
-  { id: "8jyhJ6TiUPA", title: "10 Min Ab Workout", category: "core", channel: "THENX" },
-  { id: "2pLT-olgUJs", title: "Plank Variations for Abs", category: "core", channel: "Calisthenicmovement" },
-  // Full Body
-  { id: "ml6cT4AZdqI", title: "20 Min Full Body HIIT", category: "fullbody", channel: "THENX" },
-  { id: "UBMk30rjy0o", title: "No Equipment Full Body", category: "fullbody", channel: "Chloe Ting" },
-  { id: "vc1E5CfRfos", title: "Full Body Dumbbell Workout", category: "fullbody", channel: "Buff Dudes" },
-  { id: "Ng5EYMfFu0U", title: "Home Full Body Workout", category: "fullbody", channel: "Jeremy Ethier" },
+type Video = {
+  id: string;
+  title: string;
+  channel: string;
+  thumbnail?: string;
+  description?: string;
+  viewCount?: string;
+  likeCount?: string;
+  duration?: string;
+};
+
+const fallbackVideos: Video[] = [
+  { id: "2xMfFDjJg9A", title: "Best Chest Exercises", channel: "Jeremy Ethier" },
+  { id: "eGo4IYlbE5g", title: "Back Workout Science", channel: "Jeremy Ethier" },
+  { id: "SW_q7GQCalw", title: "Leg Day Essentials", channel: "Jeff Nippard" },
+  { id: "nRjKBi5QMsM", title: "Bigger Arms in 30 Days", channel: "Jeremy Ethier" },
+  { id: "AnYl6Mv5pag", title: "Core Stability Workout", channel: "Jeff Nippard" },
+  { id: "ml6cT4AZdqI", title: "20 Min Full Body HIIT", channel: "THENX" },
 ];
+
+function formatViewCount(count?: string) {
+  if (!count) return null;
+  const n = parseInt(count);
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return count;
+}
+
+function formatDuration(iso?: string) {
+  if (!iso) return null;
+  const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return null;
+  const h = match[1] ? `${match[1]}:` : "";
+  const m = match[2] || "0";
+  const s = (match[3] || "0").padStart(2, "0");
+  return `${h}${h ? m.padStart(2, "0") : m}:${s}`;
+}
 
 export default function VideosPage() {
   const [active, setActive] = useState("all");
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const { data: favorites, refetch } = useQuery({
+  // Favorites
+  const { data: favorites, refetch: refetchFavs } = useQuery({
     queryKey: ["favorites", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("favorite_videos").select("video_id").eq("user_id", user!.id);
@@ -68,26 +77,81 @@ export default function VideosPage() {
     enabled: !!user,
   });
 
-  const filtered = useMemo(() => {
-    let list = allVideos;
-    if (active === "favorites") {
-      list = allVideos.filter((v) => favorites?.includes(v.id));
-    } else if (active !== "all") {
-      list = allVideos.filter((v) => v.category === active);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (v) =>
-          v.title.toLowerCase().includes(q) ||
-          v.channel.toLowerCase().includes(q) ||
-          v.category.toLowerCase().includes(q)
-      );
-    }
-    return list;
-  }, [active, search, favorites]);
+  // YouTube search
+  const { data: searchResults, isLoading: searchLoading, refetch: refetchSearch } = useQuery({
+    queryKey: ["youtube-search", search, active],
+    queryFn: async () => {
+      if (active === "favorites") return null;
+      const query = search.trim() || (active === "all" ? "workout fitness" : `${active} workout exercise`);
+      const { data, error } = await supabase.functions.invoke("youtube-search", {
+        body: { type: "search", payload: { query, maxResults: 15 } },
+      });
+      if (error) throw error;
+      return data as { videos: Video[]; nextPageToken?: string };
+    },
+    enabled: active !== "favorites",
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const toggleFavorite = async (video: (typeof allVideos)[0]) => {
+  // Video details for enrichment
+  const videoIds = searchResults?.videos?.map((v) => v.id).join(",");
+  const { data: videoDetails } = useQuery({
+    queryKey: ["youtube-details", videoIds],
+    queryFn: async () => {
+      if (!videoIds) return null;
+      const { data, error } = await supabase.functions.invoke("youtube-search", {
+        body: { type: "details", payload: { videoIds } },
+      });
+      if (error) throw error;
+      return data as { videos: Video[] };
+    },
+    enabled: !!videoIds,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  // Merge details into search results
+  const detailsMap = new Map(videoDetails?.videos?.map((v) => [v.id, v]) || []);
+  const videos: Video[] = active === "favorites"
+    ? fallbackVideos.filter((v) => favorites?.includes(v.id))
+    : (searchResults?.videos || fallbackVideos).map((v) => ({
+        ...v,
+        ...(detailsMap.get(v.id) || {}),
+      }));
+
+  const handleSearch = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+  }, [searchInput]);
+
+  const handleCategoryChange = (key: string) => {
+    setActive(key);
+    setSearch("");
+    setSearchInput("");
+  };
+
+  // AI video recommendations
+  const getAiRecommendations = async () => {
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-fitness", {
+        body: {
+          type: "video_recommend",
+          payload: { goal: "general fitness", muscleGroup: active === "all" ? "full body" : active, fitnessLevel: "intermediate" },
+        },
+      });
+      if (error) throw error;
+      const query = data.queries?.[0] || "best workout video";
+      setSearchInput(query);
+      setSearch(query);
+      toast({ title: "AI Recommendation", description: data.description || "Found recommended videos for you!" });
+    } catch (err: any) {
+      toast({ title: "AI Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (video: Video) => {
     if (!user) return;
     const isFav = favorites?.includes(video.id);
     if (isFav) {
@@ -98,11 +162,11 @@ export default function VideosPage() {
         user_id: user.id,
         video_id: video.id,
         video_title: video.title,
-        category: video.category,
+        category: active !== "all" && active !== "favorites" ? active : null,
       });
       toast({ title: "Added to favorites!" });
     }
-    refetch();
+    refetchFavs();
   };
 
   return (
@@ -112,31 +176,39 @@ export default function VideosPage() {
           <h1 className="text-3xl md:text-4xl font-display">
             <span className="text-gradient-primary">GYM</span> VIDEOS
           </h1>
-          <p className="text-muted-foreground mt-2">Curated workout videos from top fitness creators.</p>
+          <p className="text-muted-foreground mt-2">Search real YouTube workout videos powered by AI recommendations.</p>
         </motion.div>
 
         {/* Search bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search workouts (e.g. dumbbell chest workout)..."
-            className="w-full bg-card border border-border rounded-xl pl-10 pr-10 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search YouTube for workouts..."
+              className="w-full bg-card border border-border rounded-xl pl-10 pr-10 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
+            />
+            {searchInput && (
+              <button type="button" onClick={() => { setSearchInput(""); setSearch(""); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <Button type="submit" variant="default" className="rounded-xl px-5">
+            <Search className="h-4 w-4" />
+          </Button>
+          <Button type="button" variant="outline" className="rounded-xl px-4" onClick={getAiRecommendations} disabled={aiLoading}>
+            {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          </Button>
+        </form>
 
         {/* Category chips */}
         <div className="flex gap-2 flex-wrap">
           {categories.map((c) => (
             <button
               key={c.key}
-              onClick={() => setActive(c.key)}
+              onClick={() => handleCategoryChange(c.key)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 active === c.key
                   ? "bg-primary text-primary-foreground"
@@ -170,56 +242,85 @@ export default function VideosPage() {
           </motion.div>
         )}
 
+        {/* Loading */}
+        {searchLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 text-primary animate-spin mr-2" />
+            <span className="text-muted-foreground">Searching YouTube...</span>
+          </div>
+        )}
+
         {/* Video grid */}
-        {filtered.length === 0 ? (
+        {!searchLoading && videos.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="text-lg">No videos found</p>
             <p className="text-sm mt-1">Try a different search or category</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((v, i) => {
-              const isFav = favorites?.includes(v.id);
-              return (
-                <motion.div
-                  key={v.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-all group"
-                >
-                  <div
-                    className="aspect-video relative cursor-pointer bg-muted"
-                    onClick={() => setPlayingId(v.id)}
+          !searchLoading && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {videos.map((v, i) => {
+                const isFav = favorites?.includes(v.id);
+                const views = formatViewCount(v.viewCount);
+                const dur = formatDuration(v.duration);
+                return (
+                  <motion.div
+                    key={v.id}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-all group"
                   >
-                    <img
-                      src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
-                      alt={v.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="h-14 w-14 rounded-full bg-primary/90 flex items-center justify-center">
-                        <Play className="h-7 w-7 text-primary-foreground ml-1" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 flex items-start justify-between">
-                    <div className="cursor-pointer flex-1" onClick={() => setPlayingId(v.id)}>
-                      <h3 className="text-sm font-medium text-foreground">{v.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{v.channel}</p>
-                    </div>
-                    <button
-                      onClick={() => toggleFavorite(v)}
-                      className={`transition-colors ml-2 ${isFav ? "text-secondary" : "text-muted-foreground hover:text-secondary"}`}
+                    <div
+                      className="aspect-video relative cursor-pointer bg-muted"
+                      onClick={() => setPlayingId(v.id)}
                     >
-                      <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
-                    </button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                      <img
+                        src={v.thumbnail || `https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
+                        alt={v.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="h-14 w-14 rounded-full bg-primary/90 flex items-center justify-center">
+                          <Play className="h-7 w-7 text-primary-foreground ml-1" />
+                        </div>
+                      </div>
+                      {dur && (
+                        <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
+                          {dur}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 space-y-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="cursor-pointer flex-1" onClick={() => setPlayingId(v.id)}>
+                          <h3 className="text-sm font-medium text-foreground line-clamp-2">{v.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">{v.channel}</p>
+                        </div>
+                        <button
+                          onClick={() => toggleFavorite(v)}
+                          className={`transition-colors shrink-0 ${isFav ? "text-secondary" : "text-muted-foreground hover:text-secondary"}`}
+                        >
+                          <Heart className={`h-4 w-4 ${isFav ? "fill-current" : ""}`} />
+                        </button>
+                      </div>
+                      {(views || v.likeCount) && (
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          {views && (
+                            <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{views}</span>
+                          )}
+                          {v.likeCount && (
+                            <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{formatViewCount(v.likeCount)}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )
         )}
       </div>
     </AppLayout>
