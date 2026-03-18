@@ -227,7 +227,7 @@ export default function LandingPage() {
               Your all-in-one AI fitness companion. Analyze meals, generate workouts, and get coached — all in one app.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
-              <Link to="/auth">
+              <Link to="/onboarding">
                 <Button variant="hero" size="lg" className="h-14 px-8 text-lg">
                   Start Training <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
