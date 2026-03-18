@@ -183,7 +183,7 @@ export default function LandingPage() {
                   <Link to="/auth" className="flex-1">
                     <Button variant="heroOutline" size="sm" className="w-full">Log In</Button>
                   </Link>
-                  <Link to="/auth" className="flex-1">
+                  <Link to="/onboarding" className="flex-1">
                     <Button variant="hero" size="sm" className="w-full">Get Started</Button>
                   </Link>
                 </div>
