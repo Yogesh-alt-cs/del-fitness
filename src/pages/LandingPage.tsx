@@ -146,7 +146,7 @@ export default function LandingPage() {
               <Link to="/auth">
                 <Button variant="heroOutline" size="sm">Log In</Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/onboarding">
                 <Button variant="hero" size="sm">Get Started <ArrowRight className="h-4 w-4 ml-1" /></Button>
               </Link>
             </div>
