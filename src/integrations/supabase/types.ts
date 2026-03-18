@@ -38,6 +38,65 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_sets: {
         Row: {
           exercise_name: string
@@ -160,8 +219,11 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          available_equipment: string | null
           avatar_url: string | null
           created_at: string
+          experience_level: string | null
+          fitness_goal: string | null
           goal: string | null
           goal_calories: number | null
           goal_protein: number | null
@@ -169,14 +231,19 @@ export type Database = {
           height_cm: number | null
           id: string
           name: string | null
+          onboarding_completed: boolean | null
           updated_at: string
           user_id: string
           weight_kg: number | null
+          workout_frequency: number | null
         }
         Insert: {
           age?: number | null
+          available_equipment?: string | null
           avatar_url?: string | null
           created_at?: string
+          experience_level?: string | null
+          fitness_goal?: string | null
           goal?: string | null
           goal_calories?: number | null
           goal_protein?: number | null
@@ -184,14 +251,19 @@ export type Database = {
           height_cm?: number | null
           id?: string
           name?: string | null
+          onboarding_completed?: boolean | null
           updated_at?: string
           user_id: string
           weight_kg?: number | null
+          workout_frequency?: number | null
         }
         Update: {
           age?: number | null
+          available_equipment?: string | null
           avatar_url?: string | null
           created_at?: string
+          experience_level?: string | null
+          fitness_goal?: string | null
           goal?: string | null
           goal_calories?: number | null
           goal_protein?: number | null
@@ -199,9 +271,11 @@ export type Database = {
           height_cm?: number | null
           id?: string
           name?: string | null
+          onboarding_completed?: boolean | null
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
+          workout_frequency?: number | null
         }
         Relationships: []
       }
