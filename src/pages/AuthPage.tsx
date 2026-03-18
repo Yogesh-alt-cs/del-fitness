@@ -41,8 +41,20 @@ export default function AuthPage() {
           options: { emailRedirectTo: window.location.origin, data: { name } },
         });
         if (error) throw error;
-        // With auto-confirm, user is immediately logged in
+        // Save onboarding data to profile if available
         if (data.session) {
+          const onboardingRaw = localStorage.getItem("delfitness_onboarding");
+          if (onboardingRaw) {
+            const ob = JSON.parse(onboardingRaw);
+            await supabase.from("profiles").update({
+              fitness_goal: ob.fitness_goal,
+              experience_level: ob.experience_level,
+              available_equipment: ob.available_equipment,
+              workout_frequency: ob.workout_frequency ? parseInt(ob.workout_frequency) : null,
+              onboarding_completed: true,
+            }).eq("user_id", data.session.user.id);
+            localStorage.removeItem("delfitness_onboarding");
+          }
           navigate("/dashboard");
         } else {
           toast({ title: "Account created!", description: "Check your email to confirm your account." });

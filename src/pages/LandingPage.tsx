@@ -146,7 +146,7 @@ export default function LandingPage() {
               <Link to="/auth">
                 <Button variant="heroOutline" size="sm">Log In</Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/onboarding">
                 <Button variant="hero" size="sm">Get Started <ArrowRight className="h-4 w-4 ml-1" /></Button>
               </Link>
             </div>
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   <Link to="/auth" className="flex-1">
                     <Button variant="heroOutline" size="sm" className="w-full">Log In</Button>
                   </Link>
-                  <Link to="/auth" className="flex-1">
+                  <Link to="/onboarding" className="flex-1">
                     <Button variant="hero" size="sm" className="w-full">Get Started</Button>
                   </Link>
                 </div>
@@ -227,7 +227,7 @@ export default function LandingPage() {
               Your all-in-one AI fitness companion. Analyze meals, generate workouts, and get coached — all in one app.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
-              <Link to="/auth">
+              <Link to="/onboarding">
                 <Button variant="hero" size="lg" className="h-14 px-8 text-lg">
                   Start Training <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>

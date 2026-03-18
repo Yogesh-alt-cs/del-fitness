@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Play, Heart, Search, X, Sparkles, Loader2, Eye, ThumbsUp } from "lucide-react";
+import { Play, Heart, Search, X, Sparkles, Loader2, Eye, ThumbsUp, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const categories = [
   { name: "All", key: "all" },
@@ -32,12 +33,12 @@ type Video = {
 };
 
 const fallbackVideos: Video[] = [
-  { id: "2xMfFDjJg9A", title: "Best Chest Exercises", channel: "Jeremy Ethier" },
-  { id: "eGo4IYlbE5g", title: "Back Workout Science", channel: "Jeremy Ethier" },
-  { id: "SW_q7GQCalw", title: "Leg Day Essentials", channel: "Jeff Nippard" },
-  { id: "nRjKBi5QMsM", title: "Bigger Arms in 30 Days", channel: "Jeremy Ethier" },
-  { id: "AnYl6Mv5pag", title: "Core Stability Workout", channel: "Jeff Nippard" },
-  { id: "ml6cT4AZdqI", title: "20 Min Full Body HIIT", channel: "THENX" },
+  { id: "2xMfFDjJg9A", title: "Best Chest Exercises for Mass", channel: "Jeremy Ethier", thumbnail: `https://img.youtube.com/vi/2xMfFDjJg9A/mqdefault.jpg` },
+  { id: "eGo4IYlbE5g", title: "Back Workout Science", channel: "Jeremy Ethier", thumbnail: `https://img.youtube.com/vi/eGo4IYlbE5g/mqdefault.jpg` },
+  { id: "SW_q7GQCalw", title: "Leg Day Essentials", channel: "Jeff Nippard", thumbnail: `https://img.youtube.com/vi/SW_q7GQCalw/mqdefault.jpg` },
+  { id: "nRjKBi5QMsM", title: "Bigger Arms in 30 Days", channel: "Jeremy Ethier", thumbnail: `https://img.youtube.com/vi/nRjKBi5QMsM/mqdefault.jpg` },
+  { id: "AnYl6Mv5pag", title: "Core Stability Workout", channel: "Jeff Nippard", thumbnail: `https://img.youtube.com/vi/AnYl6Mv5pag/mqdefault.jpg` },
+  { id: "ml6cT4AZdqI", title: "20 Min Full Body HIIT", channel: "THENX", thumbnail: `https://img.youtube.com/vi/ml6cT4AZdqI/mqdefault.jpg` },
 ];
 
 function formatViewCount(count?: string) {
@@ -58,15 +59,29 @@ function formatDuration(iso?: string) {
   return `${h}${h ? m.padStart(2, "0") : m}:${s}`;
 }
 
+function VideoSkeleton() {
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <Skeleton className="aspect-video w-full" />
+      <div className="p-4 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+      </div>
+    </div>
+  );
+}
+
 export default function VideosPage() {
   const [active, setActive] = useState("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [playerError, setPlayerError] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [allVideos, setAllVideos] = useState<Video[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | undefined>();
   const [loadingMore, setLoadingMore] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -80,23 +95,33 @@ export default function VideosPage() {
     enabled: !!user,
   });
 
-  // YouTube search
+  // YouTube search with error handling
   const { data: searchResults, isLoading: searchLoading } = useQuery({
     queryKey: ["youtube-search", search, active],
     queryFn: async () => {
       if (active === "favorites") return null;
+      setApiError(null);
       const query = search.trim() || (active === "all" ? "workout fitness" : `${active} workout exercise`);
-      const { data, error } = await supabase.functions.invoke("youtube-search", {
-        body: { type: "search", payload: { query, maxResults: 15 } },
-      });
-      if (error) throw error;
-      const result = data as { videos: Video[]; nextPageToken?: string };
-      setAllVideos(result.videos || []);
-      setNextPageToken(result.nextPageToken);
-      return result;
+      try {
+        const { data, error } = await supabase.functions.invoke("youtube-search", {
+          body: { type: "search", payload: { query, maxResults: 15 } },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        const result = data as { videos: Video[]; nextPageToken?: string };
+        setAllVideos(result.videos || []);
+        setNextPageToken(result.nextPageToken);
+        return result;
+      } catch (err: any) {
+        console.error("YouTube search error:", err);
+        setApiError(err.message || "Failed to load videos");
+        setAllVideos([]);
+        return null;
+      }
     },
     enabled: active !== "favorites",
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const loadMore = async () => {
@@ -118,7 +143,7 @@ export default function VideosPage() {
     }
   };
 
-  // Video details for enrichment
+  // Video details
   const allVideoIds = allVideos.map((v) => v.id).join(",");
   const { data: videoDetails } = useQuery({
     queryKey: ["youtube-details", allVideoIds],
@@ -127,21 +152,23 @@ export default function VideosPage() {
       const { data, error } = await supabase.functions.invoke("youtube-search", {
         body: { type: "details", payload: { videoIds: allVideoIds } },
       });
-      if (error) throw error;
+      if (error) return null;
       return data as { videos: Video[] };
     },
     enabled: !!allVideoIds,
     staleTime: 10 * 60 * 1000,
+    retry: 0,
   });
 
-  // Merge details into search results
   const detailsMap = new Map(videoDetails?.videos?.map((v) => [v.id, v]) || []);
+  
+  // Use fallback when API fails
+  const useFallback = apiError || (allVideos.length === 0 && !searchLoading && active !== "favorites" && !search);
   const videos: Video[] = active === "favorites"
     ? fallbackVideos.filter((v) => favorites?.includes(v.id))
-    : (allVideos.length > 0 ? allVideos : fallbackVideos).map((v) => ({
-        ...v,
-        ...(detailsMap.get(v.id) || {}),
-      }));
+    : useFallback
+      ? fallbackVideos
+      : allVideos.map((v) => ({ ...v, ...(detailsMap.get(v.id) || {}) }));
 
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -152,9 +179,9 @@ export default function VideosPage() {
     setActive(key);
     setSearch("");
     setSearchInput("");
+    setApiError(null);
   };
 
-  // AI video recommendations
   const getAiRecommendations = async () => {
     setAiLoading(true);
     try {
@@ -194,6 +221,11 @@ export default function VideosPage() {
     refetchFavs();
   };
 
+  const handlePlayVideo = (id: string) => {
+    setPlayerError(false);
+    setPlayingId(id);
+  };
+
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
@@ -203,6 +235,17 @@ export default function VideosPage() {
           </h1>
           <p className="text-muted-foreground mt-2">Search real YouTube workout videos powered by AI recommendations.</p>
         </motion.div>
+
+        {/* API Error Banner */}
+        {apiError && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-foreground">YouTube API unavailable</p>
+              <p className="text-xs text-muted-foreground mt-1">Showing curated fallback videos. Error: {apiError}</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Search bar */}
         <form onSubmit={handleSearch} className="flex gap-2">
@@ -250,16 +293,25 @@ export default function VideosPage() {
         {playingId && (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="relative">
             <div className="aspect-video rounded-xl overflow-hidden border border-primary/30 glow-primary">
-              <iframe
-                src={`https://www.youtube.com/embed/${playingId}?autoplay=1&rel=0`}
-                title="Video Player"
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              {playerError ? (
+                <div className="w-full h-full bg-muted flex flex-col items-center justify-center gap-3">
+                  <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">This video is unavailable</p>
+                  <Button variant="outline" size="sm" onClick={() => setPlayingId(null)}>Close</Button>
+                </div>
+              ) : (
+                <iframe
+                  src={`https://www.youtube.com/embed/${playingId}?autoplay=1&rel=0`}
+                  title="Video Player"
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  onError={() => setPlayerError(true)}
+                />
+              )}
             </div>
             <button
-              onClick={() => setPlayingId(null)}
+              onClick={() => { setPlayingId(null); setPlayerError(false); }}
               className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-full p-2 hover:bg-background transition-colors"
             >
               <X className="h-5 w-5 text-foreground" />
@@ -267,11 +319,12 @@ export default function VideosPage() {
           </motion.div>
         )}
 
-        {/* Loading */}
+        {/* Loading skeleton */}
         {searchLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 text-primary animate-spin mr-2" />
-            <span className="text-muted-foreground">Searching YouTube...</span>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <VideoSkeleton key={i} />
+            ))}
           </div>
         )}
 
@@ -290,7 +343,7 @@ export default function VideosPage() {
                 const dur = formatDuration(v.duration);
                 return (
                   <motion.div
-                    key={v.id}
+                    key={`${v.id}-${i}`}
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
@@ -298,13 +351,14 @@ export default function VideosPage() {
                   >
                     <div
                       className="aspect-video relative cursor-pointer bg-muted"
-                      onClick={() => setPlayingId(v.id)}
+                      onClick={() => handlePlayVideo(v.id)}
                     >
                       <img
                         src={v.thumbnail || `https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
                         alt={v.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${v.id}/default.jpg`; }}
                       />
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="h-14 w-14 rounded-full bg-primary/90 flex items-center justify-center">
@@ -319,7 +373,7 @@ export default function VideosPage() {
                     </div>
                     <div className="p-4 space-y-1">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="cursor-pointer flex-1" onClick={() => setPlayingId(v.id)}>
+                        <div className="cursor-pointer flex-1" onClick={() => handlePlayVideo(v.id)}>
                           <h3 className="text-sm font-medium text-foreground line-clamp-2">{v.title}</h3>
                           <p className="text-xs text-muted-foreground mt-1">{v.channel}</p>
                         </div>
@@ -332,12 +386,8 @@ export default function VideosPage() {
                       </div>
                       {(views || v.likeCount) && (
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {views && (
-                            <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{views}</span>
-                          )}
-                          {v.likeCount && (
-                            <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{formatViewCount(v.likeCount)}</span>
-                          )}
+                          {views && <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{views}</span>}
+                          {v.likeCount && <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{formatViewCount(v.likeCount)}</span>}
                         </div>
                       )}
                     </div>
@@ -349,14 +399,9 @@ export default function VideosPage() {
         )}
 
         {/* Load More */}
-        {!searchLoading && active !== "favorites" && nextPageToken && videos.length > 0 && (
+        {!searchLoading && active !== "favorites" && nextPageToken && videos.length > 0 && !apiError && (
           <div className="flex justify-center pt-2 pb-4">
-            <Button
-              variant="outline"
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="rounded-xl px-8"
-            >
+            <Button variant="outline" onClick={loadMore} disabled={loadingMore} className="rounded-xl px-8">
               {loadingMore ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading...</> : "Load More"}
             </Button>
           </div>
