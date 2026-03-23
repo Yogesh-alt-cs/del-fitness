@@ -51,8 +51,6 @@ serve(async (req) => {
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content || "";
-      
-      // Parse JSON from response, handling potential markdown wrapping
       let parsed;
       try {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -111,7 +109,18 @@ serve(async (req) => {
     }
 
     if (type === "coach_chat") {
-      const { messages } = payload;
+      const { messages, userProfile } = payload;
+
+      // Build personalized system prompt from user profile
+      let systemPrompt = `You are Del, the AI fitness coach for the DelFitness app. You are knowledgeable, encouraging, and motivating. You specialize in nutrition, workout programming, exercise science, and healthy lifestyle habits. Keep responses concise, practical, and personalized. Always be supportive and positive. Use markdown formatting for readability.
+
+When users ask about workouts, exercises, or want video recommendations, include YouTube video links in your response. Format them as clickable markdown links like this: [Video Title](https://www.youtube.com/watch?v=VIDEO_ID). Recommend well-known fitness YouTubers like Jeff Nippard, Jeremy Ethier, AthleanX, THENX, Sydney Cummings, Fitness Blender, etc. Suggest 2-3 relevant videos when appropriate.`;
+
+      if (userProfile) {
+        const p = userProfile;
+        systemPrompt += `\n\nYou are a personal fitness coach for ${p.name || "this user"}. Their goal is ${p.fitness_goal || p.goal || "general fitness"}. They are ${p.age || "unknown age"} years old, weigh ${p.weight_kg || "unknown"}kg, are ${p.height_cm || "unknown"}cm tall, and have ${p.experience_level || "unknown"} experience. They can work out ${p.workout_frequency || p.goal_workouts_per_week || "unknown"} days/week and have access to ${p.available_equipment || "unknown equipment"}. Personalize every response based on this profile. Give specific sets, reps, rest times, and meal advice tailored to them.`;
+      }
+
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -121,15 +130,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            {
-              role: "system",
-              content: `You are Del, the AI fitness coach for the DelFitness app. You are knowledgeable, encouraging, and motivating. You specialize in nutrition, workout programming, exercise science, and healthy lifestyle habits. Keep responses concise, practical, and personalized. Always be supportive and positive. Use markdown formatting for readability.
-
-When users ask about workouts, exercises, or want video recommendations, include YouTube video links in your response. Format them as clickable markdown links like this: [Video Title](https://www.youtube.com/watch?v=VIDEO_ID). Recommend well-known fitness YouTubers like Jeff Nippard, Jeremy Ethier, AthleanX, THENX, Sydney Cummings, Fitness Blender, etc. Suggest 2-3 relevant videos when appropriate. For example:
-- For chest workouts: [10 Best Chest Exercises](https://www.youtube.com/results?search_query=best+chest+exercises+workout)
-- For form tips: link to specific technique videos
-Always make your video suggestions relevant to what the user is asking about.`
-            },
+            { role: "system", content: systemPrompt },
             ...messages,
           ],
           stream: true,
