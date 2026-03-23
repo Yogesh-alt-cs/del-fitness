@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Bot, Send, Sparkles, Loader2, Plus, Trash2, MessageSquare, Edit2, Check, X } from "lucide-react";
+import { Bot, Send, Sparkles, Loader2, Plus, Trash2, MessageSquare, Edit2, Check, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-fitness`;
 
@@ -37,6 +38,18 @@ export default function CoachPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Fetch user profile for personalization
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const isProfileIncomplete = !profile?.fitness_goal && !profile?.experience_level && !profile?.weight_kg;
 
   // Fetch conversations
   const { data: conversations, refetch: refetchConvos } = useQuery({
@@ -79,7 +92,6 @@ export default function CoachPage() {
 
   const saveMessages = useCallback(async (convoId: string, msgs: Message[]) => {
     if (!user) return;
-    // Save the last 2 messages (user + assistant)
     const toSave = msgs.slice(-2);
     for (const m of toSave) {
       await supabase.from("chat_messages").insert({
@@ -89,7 +101,6 @@ export default function CoachPage() {
         content: m.content,
       });
     }
-    // Update conversation timestamp
     await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", convoId);
     refetchConvos();
   }, [user, refetchConvos]);
@@ -117,7 +128,6 @@ export default function CoachPage() {
     if (!convoId) {
       convoId = await createNewConvo(text);
       setActiveConvoId(convoId);
-      // Save welcome + user msg
       await supabase.from("chat_messages").insert([
         { conversation_id: convoId, user_id: user!.id, role: "assistant", content: WELCOME_MSG.content },
         { conversation_id: convoId, user_id: user!.id, role: "user", content: text },
@@ -149,7 +159,10 @@ export default function CoachPage() {
         },
         body: JSON.stringify({
           type: "coach_chat",
-          payload: { messages: newMessages.map((m) => ({ role: m.role, content: m.content })) },
+          payload: {
+            messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+            userProfile: profile || undefined,
+          },
         }),
       });
 
@@ -203,7 +216,6 @@ export default function CoachPage() {
         }
       }
 
-      // Save assistant message
       if (convoId && assistantSoFar) {
         await supabase.from("chat_messages").insert({
           conversation_id: convoId, user_id: user!.id, role: "assistant", content: assistantSoFar,
@@ -315,6 +327,19 @@ export default function CoachPage() {
               </div>
             </div>
           </div>
+
+          {/* Incomplete profile banner */}
+          {isProfileIncomplete && (
+            <div className="mx-4 mt-3 md:mx-6">
+              <div className="bg-secondary/10 border border-secondary/30 rounded-xl p-3 flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-secondary shrink-0" />
+                <p className="text-sm text-foreground flex-1">Complete your profile to get personalized advice from Del.</p>
+                <Link to="/onboarding">
+                  <Button variant="outline" size="sm" className="shrink-0">Complete Profile →</Button>
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
