@@ -75,6 +75,43 @@
     --sidebar-border: 0 0% 16%;
     --sidebar-ring: 66 92% 52%;
   }
+
+  /* ===========================================================
+     LIQUID GLASS THEME — premium dark + glassmorphism
+     Activated via class="glass" on <html>
+     =========================================================== */
+  .glass {
+    --background: 210 30% 6%;
+    --foreground: 210 17% 93%;
+    --card: 210 25% 9%;
+    --card-foreground: 210 17% 93%;
+    --popover: 210 25% 9%;
+    --popover-foreground: 210 17% 93%;
+    --primary: 73 100% 62%;
+    --primary-foreground: 210 30% 6%;
+    --secondary: 73 92% 57%;
+    --secondary-foreground: 210 30% 6%;
+    --accent: 73 100% 62%;
+    --accent-foreground: 210 30% 6%;
+    --muted: 210 22% 12%;
+    --muted-foreground: 213 11% 53%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 210 17% 93%;
+    --border: 210 20% 16%;
+    --input: 210 20% 16%;
+    --ring: 73 100% 62%;
+    --surface: 210 25% 9%;
+    --glow-primary: 73 100% 62%;
+    --glow-secondary: 73 92% 57%;
+    --sidebar-background: 210 28% 7%;
+    --sidebar-foreground: 210 17% 93%;
+    --sidebar-primary: 73 100% 62%;
+    --sidebar-primary-foreground: 210 30% 6%;
+    --sidebar-accent: 210 22% 12%;
+    --sidebar-accent-foreground: 210 17% 93%;
+    --sidebar-border: 210 20% 16%;
+    --sidebar-ring: 73 100% 62%;
+  }
 }
 
 @layer base {
@@ -86,6 +123,15 @@
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-wide;
+  }
+
+  /* Ambient lime glow only in glass theme */
+  .glass body {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(1200px 600px at 90% -10%, rgba(214, 255, 63, 0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(214, 255, 63, 0.05), transparent 60%);
+    background-attachment: fixed;
   }
 }
 
@@ -108,5 +154,81 @@
   }
   .bg-surface {
     background-color: hsl(var(--surface));
+  }
+
+  /* ===== Liquid Glass utilities — only activate in .glass theme ===== */
+  .glass-subtle {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    transition: background-color 220ms ease, border-color 220ms ease, transform 220ms ease;
+  }
+  .glass .glass-subtle {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(4px) saturate(140%);
+    -webkit-backdrop-filter: blur(4px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-strong {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+  }
+  .glass .glass-strong {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+      rgba(214, 255, 63, 0.06);
+    backdrop-filter: blur(40px) saturate(160%);
+    -webkit-backdrop-filter: blur(40px) saturate(160%);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.10),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .glass .glass-strong::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.15));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .glass-input {
+    background-color: hsl(var(--input));
+  }
+  .glass .glass-input {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+  .glass .glass-input:focus,
+  .glass .glass-input:focus-within {
+    border-color: rgba(214, 255, 63, 0.55);
+    box-shadow: 0 0 0 3px rgba(214, 255, 63, 0.10);
+  }
+
+  .glass-press {
+    transition: transform 200ms ease, background-color 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+  }
+  .glass-press:active {
+    transform: scale(0.97);
+  }
+
+  .accent-glow {
+    background: radial-gradient(circle at center, rgba(214, 255, 63, 0.15), transparent 60%);
+  }
+
+  .hero-overlay {
+    background: linear-gradient(to bottom, rgba(11, 15, 20, 0.6), rgba(11, 15, 20, 1));
   }
 }
