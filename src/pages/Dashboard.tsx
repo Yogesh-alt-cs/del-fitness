@@ -34,26 +34,86 @@ const MACRO_COLORS = {
 const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
 
 // Workout plan recommendations based on fitness goal
-const PLAN_RECOMMENDATIONS: Record<string, { name: string; difficulty: string; duration: string; daysPerWeek: number; description: string }[]> = {
+const PLAN_RECOMMENDATIONS: Record<string, { name: string; difficulty: string; duration: string; daysPerWeek: number; description: string; days?: { name: string; muscle: string; duration: string }[] }[]> = {
   "lose weight": [
-    { name: "HIIT Blast", difficulty: "Intermediate", duration: "30 min", daysPerWeek: 4, description: "High intensity intervals for fat burn" },
-    { name: "Morning Cardio", difficulty: "Beginner", duration: "25 min", daysPerWeek: 5, description: "Easy morning cardio sessions" },
-    { name: "Fat Burn Circuit", difficulty: "Intermediate", duration: "40 min", daysPerWeek: 3, description: "Full body circuit training" },
+    { name: "HIIT Blast", difficulty: "Intermediate", duration: "30 min", daysPerWeek: 4, description: "High intensity intervals for fat burn",
+      days: [
+        { name: "Tabata Burner", muscle: "Full Body", duration: "30 min" },
+        { name: "Sprint Intervals", muscle: "Cardio / Legs", duration: "25 min" },
+        { name: "EMOM Circuit", muscle: "Full Body", duration: "30 min" },
+      ] },
+    { name: "Morning Cardio", difficulty: "Beginner", duration: "25 min", daysPerWeek: 5, description: "Easy morning cardio sessions",
+      days: [
+        { name: "Steady Jog", muscle: "Cardio", duration: "25 min" },
+        { name: "Brisk Walk + Core", muscle: "Cardio / Core", duration: "30 min" },
+        { name: "Cycling Flow", muscle: "Legs / Cardio", duration: "25 min" },
+      ] },
+    { name: "Fat Burn Circuit", difficulty: "Intermediate", duration: "40 min", daysPerWeek: 3, description: "Full body circuit training",
+      days: [
+        { name: "Upper Circuit", muscle: "Upper Body", duration: "40 min" },
+        { name: "Lower Circuit", muscle: "Lower Body", duration: "40 min" },
+        { name: "Total Body Burn", muscle: "Full Body", duration: "45 min" },
+      ] },
   ],
   "build muscle": [
-    { name: "Push Pull Legs", difficulty: "Intermediate", duration: "60 min", daysPerWeek: 6, description: "Classic PPL hypertrophy split" },
-    { name: "Upper/Lower Split", difficulty: "Intermediate", duration: "50 min", daysPerWeek: 4, description: "Balanced upper/lower training" },
-    { name: "Hypertrophy Plan", difficulty: "Advanced", duration: "65 min", daysPerWeek: 5, description: "Volume-focused muscle building" },
+    { name: "Push Pull Legs", difficulty: "Intermediate", duration: "60 min", daysPerWeek: 6, description: "Classic PPL hypertrophy split",
+      days: [
+        { name: "Push Day", muscle: "Chest / Shoulders / Triceps", duration: "60 min" },
+        { name: "Pull Day", muscle: "Back / Biceps", duration: "60 min" },
+        { name: "Leg Day", muscle: "Quads / Hamstrings / Glutes", duration: "65 min" },
+      ] },
+    { name: "Upper/Lower Split", difficulty: "Intermediate", duration: "50 min", daysPerWeek: 4, description: "Balanced upper/lower training",
+      days: [
+        { name: "Upper Body Power", muscle: "Upper Body", duration: "50 min" },
+        { name: "Lower Body Power", muscle: "Lower Body", duration: "50 min" },
+        { name: "Upper Body Hypertrophy", muscle: "Upper Body", duration: "55 min" },
+      ] },
+    { name: "Hypertrophy Plan", difficulty: "Advanced", duration: "65 min", daysPerWeek: 5, description: "Volume-focused muscle building",
+      days: [
+        { name: "Chest & Back", muscle: "Chest / Back", duration: "65 min" },
+        { name: "Legs & Core", muscle: "Legs / Core", duration: "65 min" },
+        { name: "Arms & Shoulders", muscle: "Arms / Shoulders", duration: "60 min" },
+      ] },
   ],
   "improve endurance": [
-    { name: "Zone 2 Cardio", difficulty: "Beginner", duration: "45 min", daysPerWeek: 4, description: "Aerobic base building" },
-    { name: "5K Training", difficulty: "Intermediate", duration: "35 min", daysPerWeek: 4, description: "Run your first/fastest 5K" },
-    { name: "Stamina Builder", difficulty: "Advanced", duration: "50 min", daysPerWeek: 5, description: "Endurance & conditioning" },
+    { name: "Zone 2 Cardio", difficulty: "Beginner", duration: "45 min", daysPerWeek: 4, description: "Aerobic base building",
+      days: [
+        { name: "Easy Run", muscle: "Cardio", duration: "45 min" },
+        { name: "Long Bike Ride", muscle: "Cardio / Legs", duration: "60 min" },
+        { name: "Recovery Walk", muscle: "Cardio", duration: "40 min" },
+      ] },
+    { name: "5K Training", difficulty: "Intermediate", duration: "35 min", daysPerWeek: 4, description: "Run your first/fastest 5K",
+      days: [
+        { name: "Tempo Run", muscle: "Cardio", duration: "35 min" },
+        { name: "Intervals 400m", muscle: "Cardio / Legs", duration: "40 min" },
+        { name: "Long Run", muscle: "Cardio", duration: "50 min" },
+      ] },
+    { name: "Stamina Builder", difficulty: "Advanced", duration: "50 min", daysPerWeek: 5, description: "Endurance & conditioning",
+      days: [
+        { name: "Hill Repeats", muscle: "Legs / Cardio", duration: "50 min" },
+        { name: "Threshold Run", muscle: "Cardio", duration: "45 min" },
+        { name: "Cross Training", muscle: "Full Body", duration: "50 min" },
+      ] },
   ],
   default: [
-    { name: "Full Body Basics", difficulty: "Beginner", duration: "35 min", daysPerWeek: 3, description: "Foundational full body training" },
-    { name: "Mobility Flow", difficulty: "Beginner", duration: "20 min", daysPerWeek: 3, description: "Flexibility & mobility work" },
-    { name: "Daily Movement", difficulty: "Beginner", duration: "25 min", daysPerWeek: 5, description: "Stay active every day" },
+    { name: "Full Body Basics", difficulty: "Beginner", duration: "35 min", daysPerWeek: 3, description: "Foundational full body training",
+      days: [
+        { name: "Full Body A", muscle: "Full Body", duration: "35 min" },
+        { name: "Full Body B", muscle: "Full Body", duration: "35 min" },
+        { name: "Full Body C", muscle: "Full Body", duration: "40 min" },
+      ] },
+    { name: "Mobility Flow", difficulty: "Beginner", duration: "20 min", daysPerWeek: 3, description: "Flexibility & mobility work",
+      days: [
+        { name: "Hip & Lower Back", muscle: "Mobility", duration: "20 min" },
+        { name: "Shoulders & Upper Back", muscle: "Mobility", duration: "20 min" },
+        { name: "Full Body Flow", muscle: "Mobility", duration: "25 min" },
+      ] },
+    { name: "Daily Movement", difficulty: "Beginner", duration: "25 min", daysPerWeek: 5, description: "Stay active every day",
+      days: [
+        { name: "Walk + Stretch", muscle: "Cardio / Mobility", duration: "25 min" },
+        { name: "Bodyweight Basics", muscle: "Full Body", duration: "25 min" },
+        { name: "Core & Cardio", muscle: "Core / Cardio", duration: "25 min" },
+      ] },
   ],
 };
 
