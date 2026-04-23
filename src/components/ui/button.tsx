@@ -9,14 +9,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 font-semibold",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 font-semibold glass-press",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 glass-press",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground glass-press",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 glass-press",
+        ghost: "hover:bg-accent hover:text-accent-foreground glass-press",
         link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-primary text-primary-foreground hover:bg-primary/90 font-bold glow-primary text-base",
-        heroOutline: "border-2 border-primary text-primary hover:bg-primary/10 font-bold text-base",
+        hero: "bg-primary text-primary-foreground hover:bg-primary/90 font-bold glow-primary text-base glass-press",
+        heroOutline: "border-2 border-primary text-primary hover:bg-primary/10 font-bold text-base glass-press",
+        glass: "glass-strong text-foreground font-semibold rounded-xl glass-press hover:brightness-110",
+        glassOutline: "glass-subtle text-foreground font-medium rounded-xl glass-press hover:brightness-110",
       },
       size: {
         default: "h-10 px-4 py-2",
