@@ -506,6 +506,47 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {/* Upcoming Workouts (next 3 from active plan) */}
+        {recommendedPlans[0]?.days && recommendedPlans[0].days.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-primary" />
+                <h2 className="font-display text-lg text-foreground">UPCOMING WORKOUTS</h2>
+              </div>
+              <Link to="/workouts" className="text-xs text-primary hover:underline flex items-center gap-1">
+                View Plan <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              {recommendedPlans[0].days!.slice(0, 3).map((day, i) => {
+                const dayLabel = ["Today", "Tomorrow", "In 2 days"][i] || `Day ${i + 1}`;
+                return (
+                  <motion.div
+                    key={`${day.name}-${i}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + i * 0.05 }}
+                    className="bg-card border border-border rounded-xl p-5 hover:border-primary/30 transition-all flex flex-col"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-display tracking-wider text-primary uppercase">{dayLabel}</span>
+                      <span className="text-xs text-muted-foreground">⏱ {day.duration}</span>
+                    </div>
+                    <h3 className="font-display text-base text-foreground mb-1">{day.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-4 flex-1">{day.muscle}</p>
+                    <Link to="/workouts">
+                      <Button variant="hero" size="sm" className="w-full">
+                        <Dumbbell className="h-3.5 w-3.5 mr-1" /> Start Workout
+                      </Button>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
         {/* Streak Tracker + Weekly Goals */}
         <div className="grid md:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
