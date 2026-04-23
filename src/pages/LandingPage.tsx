@@ -203,8 +203,8 @@ export default function LandingPage() {
             animate={{ scale: 1 }}
             transition={{ duration: 1.8, ease: "easeOut" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
+          <div className="absolute inset-0 hero-overlay" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
         </div>
         <div className="container mx-auto relative z-10 px-4 pt-24">
           <motion.div
