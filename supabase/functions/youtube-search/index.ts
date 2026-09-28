@@ -88,8 +88,9 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("youtube-search error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
+    // Return 200 with an error flag so the app can fall back to curated videos gracefully
+    return new Response(JSON.stringify({ videos: [], error: e instanceof Error ? e.message : "Unknown error", fallback: true }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
