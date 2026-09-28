@@ -17,6 +17,7 @@ import ProgressPage from "./pages/ProgressPage";
 import CoachPage from "./pages/CoachPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
+import PlanBuilderPage from "./pages/PlanBuilderPage";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/nutrition" element={<ProtectedRoute><NutritionPage /></ProtectedRoute>} />
             <Route path="/workouts" element={<ProtectedRoute><WorkoutsPage /></ProtectedRoute>} />
+            <Route path="/plan-builder" element={<ProtectedRoute><PlanBuilderPage /></ProtectedRoute>} />
             <Route path="/videos" element={<ProtectedRoute><VideosPage /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
             <Route path="/coach" element={<ProtectedRoute><CoachPage /></ProtectedRoute>} />

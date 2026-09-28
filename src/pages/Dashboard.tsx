@@ -33,6 +33,46 @@ const MACRO_COLORS = {
 
 const DEFAULT_GOALS = { workouts: 4, calories: 2200, protein: 160 };
 
+const ActivePlanCard = ({ userId }: { userId?: string }) => {
+  const { data: plan } = useQuery({
+    queryKey: ["active_plan", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from("workout_plans").select("*").eq("is_active", true).maybeSingle();
+      return data;
+    },
+  });
+  if (!plan) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between gap-4">
+        <p className="text-sm text-muted-foreground">Build your own workout plan and it will show up here.</p>
+        <Link to="/plan-builder"><Button variant="outline" size="sm">Build a Plan</Button></Link>
+      </div>
+    );
+  }
+  const exercises = (plan.exercises as { name: string; sets: number; reps: number }[]) || [];
+  return (
+    <div className="bg-card border border-border rounded-xl p-6">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <span className="text-[10px] font-display tracking-wider text-primary uppercase">My Plan</span>
+          <h2 className="font-display text-xl text-foreground">{plan.name}</h2>
+        </div>
+        <Link to="/plan-builder" className="text-xs text-primary hover:underline">Edit plans</Link>
+      </div>
+      <ul className="grid sm:grid-cols-2 gap-2 mb-4">
+        {exercises.map((e, i) => (
+          <li key={i} className="text-sm flex justify-between bg-muted/40 rounded-lg px-3 py-2">
+            <span className="text-foreground">{e.name}</span>
+            <span className="text-muted-foreground">{e.sets} × {e.reps}</span>
+          </li>
+        ))}
+      </ul>
+      <Link to="/workouts"><Button variant="hero" size="sm" className="w-full sm:w-auto">Start Workout</Button></Link>
+    </div>
+  );
+};
+
 // Workout plan recommendations based on fitness goal
 const PLAN_RECOMMENDATIONS: Record<string, { name: string; difficulty: string; duration: string; daysPerWeek: number; description: string; days?: { name: string; muscle: string; duration: string }[] }[]> = {
   "lose weight": [
@@ -505,6 +545,9 @@ export default function Dashboard() {
             ))}
           </div>
         </motion.div>
+
+        {/* My saved active plan */}
+        <ActivePlanCard userId={user?.id} />
 
         {/* Upcoming Workouts (next 3 from active plan) */}
         {recommendedPlans[0]?.days && recommendedPlans[0].days.length > 0 && (
