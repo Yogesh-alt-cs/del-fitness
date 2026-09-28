@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Apple, Play, Bot, LayoutDashboard, User, Menu, X, TrendingUp, Dumbbell } from "lucide-react";
+import { Apple, Play, Bot, LayoutDashboard, User, Menu, X, TrendingUp, Dumbbell, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/delfitness-logo.png";
@@ -9,6 +9,7 @@ const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/nutrition", label: "Nutrition", icon: Apple },
   { path: "/workouts", label: "Workouts", icon: Dumbbell },
+  { path: "/plan-builder", label: "Plans", icon: ClipboardList },
   { path: "/videos", label: "Videos", icon: Play },
   { path: "/progress", label: "Progress", icon: TrendingUp },
   { path: "/coach", label: "Coach", icon: Bot },
